@@ -24,6 +24,28 @@ export interface Artist {
 
 export type ArtistApplicationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
+export type ReleaseType = 'SINGLE' | 'EP' | 'ALBUM' | 'SPLIT' | 'OTHER';
+
+export interface ReleaseTrack {
+  id: string;
+  title: string;
+  duration: number;
+  artistId: string;
+  albumId: string | null;
+}
+
+export interface Release {
+  id: string;
+  title: string;
+  type: ReleaseType;
+  coverUrl: string | null;
+  releasedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  artistIds: string[];
+  tracks: ReleaseTrack[];
+}
+
 export interface ArtistApplication {
   id: string;
   userId: string;
@@ -46,9 +68,7 @@ async function request<T>(
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
-
   const res = await fetch(`${API_URL}${path}`, { ...options, headers });
-
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
     const rawMessage = error?.message?.message ?? error?.message ?? 'Request failed';
@@ -60,11 +80,30 @@ async function request<T>(
           : 'Request failed';
     throw new Error(message);
   }
-
   if (res.status === 204) {
     return undefined as T;
   }
+  return res.json();
+}
 
+async function uploadFile(
+  path: string,
+  file: File,
+  token: string,
+): Promise<{ audioUrl?: string; coverUrl?: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(`${API_URL}${path}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    const rawMessage = error?.message?.message ?? error?.message ?? 'Upload failed';
+    const message = typeof rawMessage === 'string' ? rawMessage : 'Upload failed';
+    throw new Error(message);
+  }
   return res.json();
 }
 
@@ -85,6 +124,8 @@ export const api = {
     findAll: (token?: string) => request<Track[]>('/tracks', {}, token),
     play: (token: string, id: string) =>
       request<TrackPlayback>(`/tracks/${id}/play`, {}, token),
+    upload: (token: string, file: File) =>
+      uploadFile('/tracks/upload', file, token),
     update: (
       token: string,
       id: string,
@@ -113,6 +154,37 @@ export const api = {
       ),
     delete: (token: string, id: string) =>
       request<void>(`/artists/${id}`, { method: 'DELETE' }, token),
+  },
+  releases: {
+    findAll: () => request<Release[]>('/releases'),
+    findById: (id: string) => request<Release>(`/releases/${id}`),
+    create: (
+      token: string,
+      data: {
+        title: string;
+        type: ReleaseType;
+        releasedAt: string;
+        coverUrl?: string;
+        tracks: Array<{ title: string; duration: number; audioUrl: string }>;
+      },
+    ) =>
+      request<Release>('/releases', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }, token),
+    update: (
+      token: string,
+      id: string,
+      data: { title?: string; type?: ReleaseType; releasedAt?: string; coverUrl?: string },
+    ) =>
+      request<Release>(`/releases/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }, token),
+    uploadCover: (token: string, id: string, file: File) =>
+      uploadFile(`/releases/${id}/cover`, file, token),
+    delete: (token: string, id: string) =>
+      request<void>(`/releases/${id}`, { method: 'DELETE' }, token),
   },
   artistApplications: {
     apply: (token: string, data: { bio: string; socialLinks: string }) =>
