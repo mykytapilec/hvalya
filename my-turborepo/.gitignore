@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.turbo/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Prisma
+prisma/migrations/
+!prisma/migrations/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Logs
+*.log
+npm-debug.log*
+lerna-debug.log*

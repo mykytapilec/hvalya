@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  artist Artist?
+
+  @@map("users")
+}
+
+model Artist {
+  id        String   @id @default(uuid())
+  name      String
+  userId    String   @unique @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tracks Track[]
+
+  @@map("artists")
+}
+
+model Track {
+  id        String   @id @default(uuid())
+  title     String
+  duration  Int
+  audioUrl  String   @map("audio_url")
+  artistId  String   @map("artist_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@map("tracks")
+}
