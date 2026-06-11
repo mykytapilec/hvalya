@@ -1,6 +1,4 @@
-import type { Config } from 'jest';
-
-const config: Config = {
+module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: 'src',
   testRegex: '.*\\.spec\\.ts$',
@@ -11,5 +9,3 @@ const config: Config = {
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
 };
-
-export default config;
