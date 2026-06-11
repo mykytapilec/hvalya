@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { User } from '@prisma/client';
+import { UserRole } from '@hvalya/types';
 import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
 import { IUserRepository } from '../../../domain/user/user.repository.interface';
 import { UserEntity } from '../../../domain/user/user.entity';
@@ -31,19 +33,13 @@ export class UsersPrismaRepository implements IUserRepository {
     return this.toEntity(user);
   }
 
-  private toEntity(raw: {
-    id: string;
-    email: string;
-    username: string;
-    passwordHash: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }): UserEntity {
+  private toEntity(raw: User): UserEntity {
     return new UserEntity(
       raw.id,
       raw.email,
       raw.username,
       raw.passwordHash,
+      raw.role as unknown as UserRole,
       raw.createdAt,
       raw.updatedAt,
     );

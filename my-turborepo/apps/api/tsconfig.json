@@ -1,17 +1,20 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src",
     "target": "ES2017",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "ignoreDeprecations": "5.0",
+    "lib": ["ES2017"],
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "sourceMap": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "paths": {
-      "@hvalya/types": ["../../packages/types/src"]
-    },
+    "ignoreDeprecations": "5.0"
   },
   "include": ["src"]
 }
