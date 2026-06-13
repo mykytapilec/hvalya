@@ -20,8 +20,9 @@ COPY apps/api/ ./apps/api/
 # Build shared types
 RUN npm run build --workspace=packages/types
 
-# Sync built types into node_modules symlink target
-RUN cp -r packages/types/dist node_modules/@hvalya/types/dist
+# Copy individual files avoiding symlink recursion
+RUN mkdir -p node_modules/@hvalya/types/dist && \
+    find packages/types/dist -maxdepth 1 -type f -exec cp {} node_modules/@hvalya/types/dist/ \;
 
 # Generate Prisma client for linux-musl (Alpine)
 RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
