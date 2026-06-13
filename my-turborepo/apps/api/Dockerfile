@@ -17,11 +17,16 @@ RUN npm ci
 COPY packages/types/ ./packages/types/
 COPY apps/api/ ./apps/api/
 
+# Build shared types
 RUN npm run build --workspace=packages/types
+
+# Sync built types into node_modules symlink target
+RUN cp -r packages/types/dist node_modules/@hvalya/types/dist
 
 # Generate Prisma client for linux-musl (Alpine)
 RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
 
+# Build API
 RUN npm run build --workspace=apps/api
 
 # ── Stage 2: Runner ──────────────────────────────────────
