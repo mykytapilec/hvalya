@@ -8,8 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── Enums ───────────────────────────────────────────────
-
 enum UserRole {
   LISTENER
   ARTIST
@@ -18,7 +16,7 @@ enum UserRole {
 
 enum SubscriptionTier {
   FREE
-  STANDART
+  STANDARD
 }
 
 enum SubscriptionStatus {
@@ -27,8 +25,6 @@ enum SubscriptionStatus {
   EXPIRED
   PAST_DUE
 }
-
-// ─── Models ──────────────────────────────────────────────
 
 model User {
   id           String    @id @default(uuid())
@@ -41,6 +37,7 @@ model User {
 
   artist       Artist?
   subscription Subscription?
+  playlists    Playlist[]
 
   @@map("users")
 }
@@ -67,8 +64,9 @@ model Artist {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   tracks Track[]
+  albums AlbumArtist[]
 
   @@map("artists")
 }
@@ -79,10 +77,66 @@ model Track {
   duration  Int
   audioUrl  String   @map("audio_url")
   artistId  String   @map("artist_id")
+  albumId   String?  @map("album_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artist    Artist          @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  album     Album?          @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  playlists PlaylistTrack[]
 
   @@map("tracks")
+}
+
+model Album {
+  id         String    @id @default(uuid())
+  title      String
+  coverUrl   String?   @map("cover_url")
+  releasedAt DateTime? @map("released_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  tracks  Track[]
+  artists AlbumArtist[]
+
+  @@map("albums")
+}
+
+model AlbumArtist {
+  albumId  String @map("album_id")
+  artistId String @map("artist_id")
+
+  album  Album  @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@id([albumId, artistId])
+  @@map("album_artists")
+}
+
+model Playlist {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  isPublic    Boolean  @default(true) @map("is_public")
+  userId      String   @map("user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tracks PlaylistTrack[]
+
+  @@map("playlists")
+}
+
+model PlaylistTrack {
+  playlistId String   @map("playlist_id")
+  trackId    String   @map("track_id")
+  position   Int
+  addedAt    DateTime @default(now()) @map("added_at")
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  track    Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@id([playlistId, trackId])
+  @@map("playlist_tracks")
 }
