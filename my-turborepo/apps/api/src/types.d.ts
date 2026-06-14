@@ -54,4 +54,23 @@ declare module '@hvalya/types' {
     createdAt: Date;
     updatedAt: Date;
   }
+
+  export interface IAlbum {
+  id: string;
+  title: string;
+  coverUrl: string | null;
+  releasedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+  export interface IPlaylist {
+    id: string;
+    title: string;
+    description: string | null;
+    isPublic: boolean;
+    userId: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }
 }
