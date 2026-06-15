@@ -5,6 +5,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AppController } from './app.controller';
 import { ArtistsModule } from './modules/artists/artists.module';
 import { TracksModule } from './modules/tracks/tracks.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -12,7 +13,8 @@ import { TracksModule } from './modules/tracks/tracks.module';
     PrismaModule,
     AuthModule,
     ArtistsModule,
-    TracksModule
+    TracksModule,
+    SubscriptionsModule
   ],
   controllers: [AppController],
 })
