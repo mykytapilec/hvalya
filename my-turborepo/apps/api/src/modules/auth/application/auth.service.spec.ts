@@ -5,8 +5,8 @@ import * as bcrypt from 'bcryptjs';
 import { AuthService } from './auth.service';
 import { USER_REPOSITORY } from '../../../domain/user/user.repository.interface';
 import { UserEntity } from '../../../domain/user/user.entity';
+import { SubscriptionsService } from '../../subscriptions/application/subscriptions.service';
 import { UserRole } from '@hvalya/types';
-// import { beforeEach, describe, it, jest, expect } from 'node:test';
 
 const mockUserRepository = {
   findByEmail: jest.fn(),
@@ -17,6 +17,10 @@ const mockUserRepository = {
 
 const mockJwtService = {
   sign: jest.fn().mockReturnValue('mock.jwt.token'),
+};
+
+const mockSubscriptionsService = {
+  createDefault: jest.fn().mockResolvedValue({}),
 };
 
 const mockUser = new UserEntity(
@@ -38,6 +42,7 @@ describe('AuthService', () => {
         AuthService,
         { provide: USER_REPOSITORY, useValue: mockUserRepository },
         { provide: JwtService, useValue: mockJwtService },
+        { provide: SubscriptionsService, useValue: mockSubscriptionsService },
       ],
     }).compile();
 
@@ -50,6 +55,7 @@ describe('AuthService', () => {
       mockUserRepository.findByEmail.mockResolvedValue(null);
       mockUserRepository.findByUsername.mockResolvedValue(null);
       mockUserRepository.create.mockResolvedValue(mockUser);
+      mockSubscriptionsService.createDefault.mockResolvedValue({});
 
       const result = await service.register({
         email: 'test@hvalya.com',
@@ -59,6 +65,7 @@ describe('AuthService', () => {
 
       expect(result).toEqual({ accessToken: 'mock.jwt.token' });
       expect(mockUserRepository.create).toHaveBeenCalledTimes(1);
+      expect(mockSubscriptionsService.createDefault).toHaveBeenCalledWith('uuid-123');
     });
 
     it('should throw ConflictException if email already exists', async () => {
@@ -107,10 +114,7 @@ describe('AuthService', () => {
       mockUserRepository.findByEmail.mockResolvedValue(null);
 
       await expect(
-        service.login({
-          email: 'ghost@hvalya.com',
-          password: 'password123',
-        }),
+        service.login({ email: 'ghost@hvalya.com', password: 'password123' }),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -118,10 +122,7 @@ describe('AuthService', () => {
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
 
       await expect(
-        service.login({
-          email: 'test@hvalya.com',
-          password: 'wrongpassword',
-        }),
+        service.login({ email: 'test@hvalya.com', password: 'wrongpassword' }),
       ).rejects.toThrow(UnauthorizedException);
     });
   });

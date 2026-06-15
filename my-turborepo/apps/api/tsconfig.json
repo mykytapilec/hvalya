@@ -5,6 +5,7 @@
     "moduleResolution": "node",
     "lib": ["ES2017"],
     "outDir": "./dist",
+    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -14,7 +15,7 @@
     "sourceMap": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "ignoreDeprecations": "5.0",
+    "ignoreDeprecations": "6.0",
     "types": ["jest", "node"]
   },
   "include": ["src"]
