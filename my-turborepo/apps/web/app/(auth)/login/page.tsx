@@ -4,8 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../store/auth.store';
 import { api } from '../../lib/api';
-// import { api } from '../../../lib/api';
-// import { useAuthStore } from '../../../store/auth.store';
 
 export default function LoginPage() {
   const router = useRouter();
