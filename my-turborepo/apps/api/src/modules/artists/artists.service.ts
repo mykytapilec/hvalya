@@ -4,13 +4,9 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
-import {
-  IArtistRepository,
-  ARTIST_REPOSITORY,
-} from '../../../domain/artist/artist.repository.interface';
-import { ArtistEntity } from '../../../domain/artist/artist.entity';
-import { CreateArtistDto } from './dto/create-artist.dto';
-import { UpdateArtistDto } from './dto/update-artist.dto';
+import { CreateArtistDto } from './application/dto/create-artist.dto';import { UpdateArtistDto } from './application/dto/update-artist.dto';
+import { ARTIST_REPOSITORY, IArtistRepository } from '../../domain/artist/artist.repository.interface';
+import { ArtistEntity } from '../../domain/artist/artist.entity';
 
 @Injectable()
 export class ArtistsService {
@@ -55,3 +51,5 @@ export class ArtistsService {
     return this.artistRepository.delete(id);
   }
 }
+
+
