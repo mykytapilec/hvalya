@@ -13,12 +13,20 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { TracksService } from './application/tracks.service';
+import { ArtistsService } from '../artists/application/artists.service';
 import { CreateTrackDto } from './application/dto/create-track.dto';
 import { UpdateTrackDto } from './application/dto/update-track.dto';
 
+interface AuthenticatedRequest {
+  user: { id: string; email: string; username: string };
+}
+
 @Controller('tracks')
 export class TracksController {
-  constructor(private readonly tracksService: TracksService) {}
+  constructor(
+    private readonly tracksService: TracksService,
+    private readonly artistsService: ArtistsService,
+  ) {}
 
   @Get()
   findAll() {
@@ -32,8 +40,9 @@ export class TracksController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@Request() req: any, @Body() dto: CreateTrackDto) {
-    return this.tracksService.create(req.user.id, dto);
+  async create(@Request() req: AuthenticatedRequest, @Body() dto: CreateTrackDto) {
+    const artist = await this.artistsService.findByUserId(req.user.id);
+    return this.tracksService.create(artist.id, dto);
   }
 
   @Patch(':id')
