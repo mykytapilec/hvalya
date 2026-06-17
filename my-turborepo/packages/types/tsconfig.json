@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2017",
     "module": "CommonJS",
-    "moduleResolution": "node",
+    "moduleResolution": "node10",
     "lib": ["ES2017"],
     "outDir": "./dist",
     "rootDir": "./src",
@@ -14,7 +14,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "composite": true,
-    "ignoreDeprecations": "5.0"
+    "ignoreDeprecations": "6.0"
   },
   "include": ["src"]
 }
