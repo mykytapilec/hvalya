@@ -1,0 +1,10 @@
+{
+  "name": "@hvalya/ai-service",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "uvicorn app.main:app --reload --port 8000",
+    "build": "pip install --no-cache-dir .",
+    "test": "pytest"
+  }
+}
