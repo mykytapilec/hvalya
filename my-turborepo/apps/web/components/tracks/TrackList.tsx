@@ -1,6 +1,7 @@
 'use client';
 
 import { usePlayerStore } from "../../app/store/player.store";
+import { useAuthStore } from "../../app/store/auth.store";
 
 interface Track {
   id: string;
@@ -12,6 +13,8 @@ interface Track {
 
 export default function TrackList({ tracks }: { tracks: Track[] }) {
   const play = usePlayerStore((s) => s.play);
+  const role = useAuthStore((s) => s.role);
+  const canManage = role === 'ARTIST' || role === 'ADMIN';
 
   if (tracks.length === 0) {
     return <p>No tracks yet.</p>;
@@ -36,7 +39,15 @@ export default function TrackList({ tracks }: { tracks: Track[] }) {
               {Math.floor(track.duration / 60)}:{String(track.duration % 60).padStart(2, '0')}
             </span>
           </div>
-          <button onClick={() => play(track)}>▶ Play</button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => play(track)}>▶ Play</button>
+            {canManage && (
+              <>
+                <button>Edit</button>
+                <button style={{ color: 'red' }}>Delete</button>
+              </>
+            )}
+          </div>
         </li>
       ))}
     </ul>

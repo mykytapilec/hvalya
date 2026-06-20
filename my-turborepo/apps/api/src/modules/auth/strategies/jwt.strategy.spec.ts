@@ -47,6 +47,7 @@ describe('JwtStrategy', () => {
       const result = await strategy.validate({
         sub: 'uuid-123',
         email: 'test@hvalya.com',
+        role: UserRole.LISTENER,
       });
 
       expect(result).toEqual({
@@ -62,7 +63,11 @@ describe('JwtStrategy', () => {
       mockUsersService.findById.mockResolvedValue(null);
 
       await expect(
-        strategy.validate({ sub: 'non-existent', email: 'ghost@hvalya.com' }),
+        strategy.validate({
+          sub: 'non-existent',
+          email: 'ghost@hvalya.com',
+          role: UserRole.LISTENER,
+        }),
       ).rejects.toThrow(UnauthorizedException);
     });
   });
