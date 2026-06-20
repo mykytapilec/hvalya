@@ -1,6 +1,7 @@
 import { Injectable, ConflictException, UnauthorizedException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { UserRole } from '@hvalya/types';
 import { IUserRepository, USER_REPOSITORY } from '../../../domain/user/user.repository.interface';
 import { SubscriptionsService } from '../../subscriptions/application/subscriptions.service';
 import { RegisterDto } from './dto/register.dto';
@@ -33,7 +34,7 @@ export class AuthService {
 
     await this.subscriptionsService.createDefault(user.id);
 
-    return this.generateToken(user.id, user.email);
+    return this.generateToken(user.id, user.email, user.role);
   }
 
   async login(dto: LoginDto): Promise<{ accessToken: string }> {
@@ -43,11 +44,11 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
 
-    return this.generateToken(user.id, user.email);
+    return this.generateToken(user.id, user.email, user.role);
   }
 
-  private generateToken(userId: string, email: string): { accessToken: string } {
-    const payload: IJwtPayload = { sub: userId, email };
+  private generateToken(userId: string, email: string, role: UserRole): { accessToken: string } {
+    const payload: IJwtPayload = { sub: userId, email, role };
     return { accessToken: this.jwtService.sign(payload) };
   }
 }
