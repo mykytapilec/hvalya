@@ -53,6 +53,7 @@ describe('JwtStrategy', () => {
         id: mockUser.id,
         email: mockUser.email,
         username: mockUser.username,
+        role: mockUser.role,
       });
       expect(mockUsersService.findById).toHaveBeenCalledWith('uuid-123');
     });

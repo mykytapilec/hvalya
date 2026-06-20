@@ -11,10 +11,17 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { UserRole } from '@hvalya/types';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { ArtistsService } from './application/artists.service';
 import { CreateArtistDto } from './application/dto/create-artist.dto';
 import { UpdateArtistDto } from './application/dto/update-artist.dto';
+
+interface AuthenticatedRequest {
+  user: { id: string; email: string; username: string; role: UserRole };
+}
 
 @Controller('artists')
 export class ArtistsController {
@@ -31,21 +38,28 @@ export class ArtistsController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
-  create(@Request() req: any, @Body() dto: CreateArtistDto) {
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ARTIST, UserRole.ADMIN)
+  create(@Request() req: AuthenticatedRequest, @Body() dto: CreateArtistDto) {
     return this.artistsService.create(req.user.id, dto);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
-  update(@Param('id') id: string, @Body() dto: UpdateArtistDto) {
-    return this.artistsService.update(id, dto);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ARTIST, UserRole.ADMIN)
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateArtistDto,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.artistsService.update(id, dto, req.user.id, req.user.role);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ARTIST, UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id') id: string) {
-    return this.artistsService.delete(id);
+  delete(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+    return this.artistsService.delete(id, req.user.id, req.user.role);
   }
 }
