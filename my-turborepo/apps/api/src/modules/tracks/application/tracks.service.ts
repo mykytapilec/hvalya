@@ -1,4 +1,5 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { UserRole } from '@hvalya/types';
 import {
   ITrackRepository,
   TRACK_REPOSITORY,
@@ -38,13 +39,31 @@ export class TracksService {
     });
   }
 
-  async update(id: string, dto: UpdateTrackDto): Promise<TrackEntity> {
-    await this.findById(id);
+  async update(
+    id: string,
+    dto: UpdateTrackDto,
+    requesterArtistId: string,
+    requesterRole: UserRole,
+  ): Promise<TrackEntity> {
+    const track = await this.findById(id);
+    this.assertOwnership(track, requesterArtistId, requesterRole);
     return this.trackRepository.update(id, dto);
   }
 
-  async delete(id: string): Promise<void> {
-    await this.findById(id);
+  async delete(id: string, requesterArtistId: string, requesterRole: UserRole): Promise<void> {
+    const track = await this.findById(id);
+    this.assertOwnership(track, requesterArtistId, requesterRole);
     return this.trackRepository.delete(id);
+  }
+
+  private assertOwnership(
+    track: TrackEntity,
+    requesterArtistId: string,
+    requesterRole: UserRole,
+  ): void {
+    if (requesterRole === UserRole.ADMIN) return;
+    if (track.artistId !== requesterArtistId) {
+      throw new ForbiddenException('You do not have permission to modify this track');
+    }
   }
 }
