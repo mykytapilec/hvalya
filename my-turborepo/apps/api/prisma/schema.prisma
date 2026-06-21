@@ -26,6 +26,12 @@ enum SubscriptionStatus {
   PAST_DUE
 }
 
+enum ArtistApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
@@ -35,26 +41,44 @@ model User {
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
-  artist       Artist?
-  subscription Subscription?
-  playlists    Playlist[]
+  artist             Artist?
+  subscription       Subscription?
+  playlists          Playlist[]
+  artistApplications ArtistApplication[]
 
   @@map("users")
 }
 
 model Subscription {
-  id        String             @id @default(uuid())
-  userId    String             @unique @map("user_id")
-  tier      SubscriptionTier   @default(FREE)
-  status    SubscriptionStatus @default(ACTIVE)
-  startedAt DateTime           @default(now()) @map("started_at")
-  expiresAt DateTime?          @map("expires_at")
-  createdAt DateTime           @default(now()) @map("created_at")
-  updatedAt DateTime           @updatedAt @map("updated_at")
+  id          String             @id @default(uuid())
+  userId      String             @unique @map("user_id")
+  tier        SubscriptionTier   @default(FREE)
+  status      SubscriptionStatus @default(ACTIVE)
+  startedAt   DateTime           @default(now()) @map("started_at")
+  trialEndsAt DateTime?          @map("trial_ends_at")
+  expiresAt   DateTime?          @map("expires_at")
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("subscriptions")
+}
+
+model ArtistApplication {
+  id              String                  @id @default(uuid())
+  userId          String                  @map("user_id")
+  bio             String
+  socialLinks     String                  @map("social_links")
+  status          ArtistApplicationStatus @default(PENDING)
+  reviewedAt      DateTime?               @map("reviewed_at")
+  rejectionReason String?                 @map("rejection_reason")
+  createdAt       DateTime                @default(now()) @map("created_at")
+  updatedAt       DateTime                @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("artist_applications")
 }
 
 model Artist {
