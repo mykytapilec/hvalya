@@ -33,6 +33,11 @@ export class UsersPrismaRepository implements IUserRepository {
     return this.toEntity(user);
   }
 
+  async updateRole(id: string, role: UserRole): Promise<UserEntity> {
+    const user = await this.prisma.user.update({ where: { id }, data: { role } });
+    return this.toEntity(user);
+  }
+
   private toEntity(raw: User): UserEntity {
     return new UserEntity(
       raw.id,

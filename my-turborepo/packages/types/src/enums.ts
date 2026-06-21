@@ -15,3 +15,9 @@ export enum SubscriptionStatus {
   EXPIRED = 'EXPIRED',
   PAST_DUE = 'PAST_DUE',
 }
+
+export enum ArtistApplicationStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
