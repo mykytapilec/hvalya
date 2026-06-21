@@ -1,4 +1,5 @@
 import { UserEntity } from './user.entity';
+import { UserRole } from '@hvalya/types';
 
 export interface IUserRepository {
   findById(id: string): Promise<UserEntity | null>;
@@ -9,6 +10,7 @@ export interface IUserRepository {
     username: string;
     passwordHash: string;
   }): Promise<UserEntity>;
+  updateRole(id: string, role: UserRole): Promise<UserEntity>;
 }
 
 export const USER_REPOSITORY = Symbol('IUserRepository');

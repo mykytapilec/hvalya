@@ -22,6 +22,12 @@ export class TracksPrismaRepository implements ITrackRepository {
     return track ? this.toEntity(track) : null;
   }
 
+ async findByIds(ids: string[]): Promise<TrackEntity[]> {
+    if (ids.length === 0) return [];
+    const tracks = await this.prisma.track.findMany({ where: { id: { in: ids } } });
+    return tracks.map(this.toEntity);
+  }
+
   async findByArtistId(artistId: string): Promise<TrackEntity[]> {
     const tracks = await this.prisma.track.findMany({ where: { artistId } });
     return tracks.map(this.toEntity);

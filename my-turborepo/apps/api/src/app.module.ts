@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { ArtistsModule } from './modules/artists/artists.module';
 import { TracksModule } from './modules/tracks/tracks.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { ArtistApplicationsModule } from './modules/artist-applications/artist-applications.module';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
     AuthModule,
     ArtistsModule,
     TracksModule,
-    SubscriptionsModule
+    SubscriptionsModule,
+    ArtistApplicationsModule,
   ],
   controllers: [AppController],
 })

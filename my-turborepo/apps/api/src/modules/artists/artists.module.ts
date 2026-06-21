@@ -13,6 +13,6 @@ import { ARTIST_REPOSITORY } from '../../domain/artist/artist.repository.interfa
       useClass: ArtistsPrismaRepository,
     },
   ],
-  exports: [ArtistsService],
+  exports: [ArtistsService, ARTIST_REPOSITORY],
 })
 export class ArtistsModule {}

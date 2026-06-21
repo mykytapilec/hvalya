@@ -6,6 +6,9 @@ import Player from '../../components/player/Player';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const init = useAuthStore((s) => s.init);
+  const token = useAuthStore((s) => s.token);
+  const role = useAuthStore((s) => s.role);
+  const logout = useAuthStore((s) => s.logout);
 
   useEffect(() => {
     init();
@@ -13,10 +16,21 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div style={{ paddingBottom: 80 }}>
-      <nav style={{ padding: '16px', borderBottom: '1px solid #eee', display: 'flex', gap: 16 }}>
+      <nav style={{ padding: '16px', borderBottom: '1px solid #eee', display: 'flex', gap: 16, alignItems: 'center' }}>
         <a href="/tracks">Tracks</a>
         <a href="/artists">Artists</a>
-        <a href="/login" style={{ marginLeft: 'auto' }}>Login</a>
+        {role && (
+          <span style={{ marginLeft: 'auto', color: '#888', fontSize: 13 }}>
+            {role}
+          </span>
+        )}
+        {token ? (
+          <button onClick={logout} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+            Logout
+          </button>
+        ) : (
+          <a href="/login">Login</a>
+        )}
       </nav>
       <main style={{ padding: 16 }}>{children}</main>
       <Player />

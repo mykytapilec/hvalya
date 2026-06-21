@@ -19,6 +19,7 @@ export interface ITrackRepository {
   findAll(): Promise<TrackEntity[]>;
   findById(id: string): Promise<TrackEntity | null>;
   findByArtistId(artistId: string): Promise<TrackEntity[]>;
+  findByIds(ids: string[]): Promise<TrackEntity[]>;
   create(data: ICreateTrackData): Promise<TrackEntity>;
   update(id: string, data: IUpdateTrackData): Promise<TrackEntity>;
   delete(id: string): Promise<void>;

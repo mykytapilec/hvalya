@@ -15,6 +15,6 @@ import { ArtistsModule } from '../artists/artists.module';
       useClass: TracksPrismaRepository,
     },
   ],
-  exports: [TracksService],
+  exports: [TracksService, TRACK_REPOSITORY],
 })
 export class TracksModule {}

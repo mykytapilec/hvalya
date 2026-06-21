@@ -3,7 +3,9 @@ import {
   Inject,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
+import { UserRole } from '@hvalya/types';
 import {
   IArtistRepository,
   ARTIST_REPOSITORY,
@@ -45,13 +47,31 @@ export class ArtistsService {
     return this.artistRepository.create({ name: dto.name!, userId });
   }
 
-  async update(id: string, dto: UpdateArtistDto): Promise<ArtistEntity> {
-    await this.findById(id);
+  async update(
+    id: string,
+    dto: UpdateArtistDto,
+    requesterUserId: string,
+    requesterRole: UserRole,
+  ): Promise<ArtistEntity> {
+    const artist = await this.findById(id);
+    this.assertOwnership(artist, requesterUserId, requesterRole);
     return this.artistRepository.update(id, dto);
   }
 
-  async delete(id: string): Promise<void> {
-    await this.findById(id);
+  async delete(id: string, requesterUserId: string, requesterRole: UserRole): Promise<void> {
+    const artist = await this.findById(id);
+    this.assertOwnership(artist, requesterUserId, requesterRole);
     return this.artistRepository.delete(id);
+  }
+
+  private assertOwnership(
+    artist: ArtistEntity,
+    requesterUserId: string,
+    requesterRole: UserRole,
+  ): void {
+    if (requesterRole === UserRole.ADMIN) return;
+    if (artist.userId !== requesterUserId) {
+      throw new ForbiddenException('You do not have permission to modify this artist profile');
+    }
   }
 }

@@ -1,11 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, ConflictException } from '@nestjs/common';
-// import { ArtistsService } from './artists.service';
-// import { ARTIST_REPOSITORY } from '../../../domain/artist/artist.repository.interface';
-// import { ArtistEntity } from '../../../domain/artist/artist.entity';
+import { NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { ArtistsService } from './application/artists.service';
 import { ArtistEntity } from '../../domain/artist/artist.entity';
 import { ARTIST_REPOSITORY } from '../../domain/artist/artist.repository.interface';
+import { UserRole } from '@hvalya/types';
 
 const mockArtistRepository = {
   findAll: jest.fn(),
@@ -89,37 +87,83 @@ describe('ArtistsService', () => {
   });
 
   describe('update', () => {
-    it('should update artist if exists', async () => {
+    it('should update artist if owner', async () => {
       mockArtistRepository.findById.mockResolvedValue(mockArtist);
       mockArtistRepository.update.mockResolvedValue({
         ...mockArtist,
         name: 'Updated Artist',
       });
 
-      const result = await service.update('artist-uuid', { name: 'Updated Artist' });
+      const result = await service.update(
+        'artist-uuid',
+        { name: 'Updated Artist' },
+        'user-uuid',
+        UserRole.ARTIST,
+      );
       expect(result.name).toBe('Updated Artist');
+    });
+
+    it('should update artist if requester is ADMIN (not owner)', async () => {
+      mockArtistRepository.findById.mockResolvedValue(mockArtist);
+      mockArtistRepository.update.mockResolvedValue({
+        ...mockArtist,
+        name: 'Admin Updated',
+      });
+
+      const result = await service.update(
+        'artist-uuid',
+        { name: 'Admin Updated' },
+        'someone-else-uuid',
+        UserRole.ADMIN,
+      );
+      expect(result.name).toBe('Admin Updated');
+    });
+
+    it('should throw ForbiddenException if requester is not the owner', async () => {
+      mockArtistRepository.findById.mockResolvedValue(mockArtist);
+
+      await expect(
+        service.update(
+          'artist-uuid',
+          { name: 'Hacked' },
+          'someone-else-uuid',
+          UserRole.ARTIST,
+        ),
+      ).rejects.toThrow(ForbiddenException);
+      expect(mockArtistRepository.update).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if artist not found', async () => {
       mockArtistRepository.findById.mockResolvedValue(null);
       await expect(
-        service.update('non-existent', { name: 'Updated' }),
+        service.update('non-existent', { name: 'Updated' }, 'user-uuid', UserRole.ARTIST),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('delete', () => {
-    it('should delete artist if exists', async () => {
+    it('should delete artist if owner', async () => {
       mockArtistRepository.findById.mockResolvedValue(mockArtist);
       mockArtistRepository.delete.mockResolvedValue(undefined);
 
-      await service.delete('artist-uuid');
+      await service.delete('artist-uuid', 'user-uuid', UserRole.ARTIST);
       expect(mockArtistRepository.delete).toHaveBeenCalledWith('artist-uuid');
+    });
+
+    it('should throw ForbiddenException if requester is not the owner', async () => {
+      mockArtistRepository.findById.mockResolvedValue(mockArtist);
+
+      await expect(
+        service.delete('artist-uuid', 'someone-else-uuid', UserRole.ARTIST),
+      ).rejects.toThrow(ForbiddenException);
+      expect(mockArtistRepository.delete).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if artist not found', async () => {
       mockArtistRepository.findById.mockResolvedValue(null);
-      await expect(service.delete('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.delete('non-existent', 'user-uuid', UserRole.ARTIST),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });
