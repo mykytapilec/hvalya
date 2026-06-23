@@ -1,5 +1,36 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
 
+export interface Track {
+  id: string;
+  title: string;
+  duration: number;
+  audioUrl: string;
+  artistId: string;
+  albumId: string | null;
+}
+
+export interface Artist {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ArtistApplicationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface ArtistApplication {
+  id: string;
+  userId: string;
+  bio: string;
+  socialLinks: string;
+  status: ArtistApplicationStatus;
+  reviewedAt: string | null;
+  rejectionReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -35,11 +66,33 @@ export const api = {
       }),
   },
   tracks: {
-    findAll: (token?: string) =>
-      request<any[]>('/tracks', {}, token),
+    findAll: (token?: string) => request<Track[]>('/tracks', {}, token),
   },
   artists: {
-    findAll: (token?: string) =>
-      request<any[]>('/artists', {}, token),
+    findAll: (token?: string) => request<Artist[]>('/artists', {}, token),
+  },
+  artistApplications: {
+    apply: (token: string, data: { bio: string; socialLinks: string }) =>
+      request<ArtistApplication>(
+        '/artist-applications',
+        { method: 'POST', body: JSON.stringify(data) },
+        token,
+      ),
+    findMine: (token: string) =>
+      request<ArtistApplication | null>('/artist-applications/me', {}, token),
+    findPending: (token: string) =>
+      request<ArtistApplication[]>('/artist-applications/pending', {}, token),
+    approve: (token: string, id: string) =>
+      request<ArtistApplication>(
+        `/artist-applications/${id}/approve`,
+        { method: 'PATCH' },
+        token,
+      ),
+    reject: (token: string, id: string, rejectionReason: string) =>
+      request<ArtistApplication>(
+        `/artist-applications/${id}/reject`,
+        { method: 'PATCH', body: JSON.stringify({ rejectionReason }) },
+        token,
+      ),
   },
 };
