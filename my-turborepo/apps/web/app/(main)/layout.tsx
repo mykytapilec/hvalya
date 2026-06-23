@@ -19,6 +19,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <nav style={{ padding: '16px', borderBottom: '1px solid #eee', display: 'flex', gap: 16, alignItems: 'center' }}>
         <a href="/tracks">Tracks</a>
         <a href="/artists">Artists</a>
+        {role === 'LISTENER' && <a href="/become-artist">Become an Artist</a>}
+        {role === 'ADMIN' && <a href="/admin/applications">Applications</a>}
         {role && (
           <span style={{ marginLeft: 'auto', color: '#888', fontSize: 13 }}>
             {role}
