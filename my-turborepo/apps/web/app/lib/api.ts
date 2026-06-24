@@ -49,6 +49,10 @@ async function request<T>(
     throw new Error(error.message ?? 'Request failed');
   }
 
+  if (res.status === 204) {
+    return undefined as T;
+  }
+
   return res.json();
 }
 
@@ -67,9 +71,25 @@ export const api = {
   },
   tracks: {
     findAll: (token?: string) => request<Track[]>('/tracks', {}, token),
+    update: (token: string, id: string, data: Partial<Pick<Track, 'title' | 'duration' | 'audioUrl'>>) =>
+      request<Track>(
+        `/tracks/${id}`,
+        { method: 'PATCH', body: JSON.stringify(data) },
+        token,
+      ),
+    delete: (token: string, id: string) =>
+      request<void>(`/tracks/${id}`, { method: 'DELETE' }, token),
   },
   artists: {
     findAll: (token?: string) => request<Artist[]>('/artists', {}, token),
+    update: (token: string, id: string, data: Partial<Pick<Artist, 'name'>>) =>
+      request<Artist>(
+        `/artists/${id}`,
+        { method: 'PATCH', body: JSON.stringify(data) },
+        token,
+      ),
+    delete: (token: string, id: string) =>
+      request<void>(`/artists/${id}`, { method: 'DELETE' }, token),
   },
   artistApplications: {
     apply: (token: string, data: { bio: string; socialLinks: string }) =>
