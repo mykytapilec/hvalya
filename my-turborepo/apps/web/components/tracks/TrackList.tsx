@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { usePlayerStore } from "../../app/store/player.store";
-import { useAuthStore } from "../../app/store/auth.store";
-import { api, type Track } from "../../app/lib/api";
+import { useRouter } from 'next/navigation';
+import { usePlayerStore } from '../../app/store/player.store';
+import { useAuthStore } from '../../app/store/auth.store';
+import { api, type Track } from '../../app/lib/api';
 import EditTrackModal from './EditTrackModal';
 import ConfirmDeleteModal from '../ui/ConfirmDeleteModal';
 
@@ -14,6 +15,7 @@ interface TrackListProps {
 }
 
 export default function TrackList({ tracks, myArtistId, onTracksChange }: TrackListProps) {
+  const router = useRouter();
   const play = usePlayerStore((s) => s.play);
   const role = useAuthStore((s) => s.role);
   const token = useAuthStore((s) => s.token);
@@ -45,6 +47,14 @@ export default function TrackList({ tracks, myArtistId, onTracksChange }: TrackL
     setDeletingTrack(null);
   }
 
+  async function handlePlay(track: Track) {
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+    await play(track, token);
+  }
+
   return (
     <>
       <ul style={{ listStyle: 'none', padding: 0 }}>
@@ -66,7 +76,7 @@ export default function TrackList({ tracks, myArtistId, onTracksChange }: TrackL
               </span>
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <button onClick={() => play(track)}>▶ Play</button>
+              <button onClick={() => handlePlay(track)}>▶ Play</button>
               {canManage(track) && (
                 <>
                   <button onClick={() => setEditingTrack(track)}>Edit</button>

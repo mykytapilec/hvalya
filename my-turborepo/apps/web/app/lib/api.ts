@@ -4,9 +4,12 @@ export interface Track {
   id: string;
   title: string;
   duration: number;
-  audioUrl: string;
   artistId: string;
   albumId: string | null;
+}
+
+export interface TrackPlayback {
+  audioUrl: string;
 }
 
 export interface Artist {
@@ -48,7 +51,14 @@ async function request<T>(
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Request failed');
+    const rawMessage = error?.message?.message ?? error?.message ?? 'Request failed';
+    const message =
+      typeof rawMessage === 'string'
+        ? rawMessage
+        : Array.isArray(rawMessage)
+          ? rawMessage.join(', ')
+          : 'Request failed';
+    throw new Error(message);
   }
 
   if (res.status === 204) {
@@ -73,7 +83,13 @@ export const api = {
   },
   tracks: {
     findAll: (token?: string) => request<Track[]>('/tracks', {}, token),
-    update: (token: string, id: string, data: Partial<Pick<Track, 'title' | 'duration' | 'audioUrl'>>) =>
+    play: (token: string, id: string) =>
+      request<TrackPlayback>(`/tracks/${id}/play`, {}, token),
+    update: (
+      token: string,
+      id: string,
+      data: Partial<Pick<Track, 'title'>> & { audioUrl?: string },
+    ) =>
       request<Track>(
         `/tracks/${id}`,
         { method: 'PATCH', body: JSON.stringify(data) },
@@ -85,7 +101,11 @@ export const api = {
   artists: {
     findAll: (token?: string) => request<Artist[]>('/artists', {}, token),
     findMe: (token: string) => request<Artist>('/artists/me', {}, token),
-    update: (token: string, id: string, data: Partial<Pick<Artist, 'name' | 'bio' | 'socialLinks'>>) =>
+    update: (
+      token: string,
+      id: string,
+      data: Partial<Pick<Artist, 'name' | 'bio' | 'socialLinks'>>,
+    ) =>
       request<Artist>(
         `/artists/${id}`,
         { method: 'PATCH', body: JSON.stringify(data) },

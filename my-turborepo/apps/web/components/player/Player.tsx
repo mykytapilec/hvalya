@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { usePlayerStore } from '../../app/store/player.store';
 
 export default function Player() {
-  const { currentTrack, isPlaying, pause, resume } = usePlayerStore();
+  const { currentTrack, isPlaying, isLoading, error, pause, resume } = usePlayerStore();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function Player() {
     }
   }, [isPlaying]);
 
-  if (!currentTrack) return null;
+  if (!currentTrack && !error && !isLoading) return null;
 
   return (
     <div
@@ -43,13 +43,27 @@ export default function Player() {
         gap: 16,
       }}
     >
-      <strong>{currentTrack.title}</strong>
-      <button
-        onClick={isPlaying ? pause : resume}
-        style={{ background: 'none', border: '1px solid #fff', color: '#fff', padding: '4px 12px', cursor: 'pointer' }}
-      >
-        {isPlaying ? '⏸ Pause' : '▶ Resume'}
-      </button>
+      {error ? (
+        <span style={{ color: 'var(--color-danger)' }}>{error}</span>
+      ) : isLoading ? (
+        <span>Loading...</span>
+      ) : (
+        <>
+          <strong>{currentTrack?.title}</strong>
+          <button
+            onClick={isPlaying ? pause : resume}
+            style={{
+              background: 'none',
+              border: '1px solid #fff',
+              color: '#fff',
+              padding: '4px 12px',
+              cursor: 'pointer',
+            }}
+          >
+            {isPlaying ? '⏸ Pause' : '▶ Resume'}
+          </button>
+        </>
+      )}
     </div>
   );
 }

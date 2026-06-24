@@ -1,18 +1,24 @@
 'use client';
 
 import { create } from 'zustand';
+import { api } from '../lib/api';
 
-interface Track {
+interface PlayableTrack {
   id: string;
   title: string;
-  audioUrl: string;
   artistId: string;
 }
 
+interface CurrentTrack extends PlayableTrack {
+  audioUrl: string;
+}
+
 interface PlayerState {
-  currentTrack: Track | null;
+  currentTrack: CurrentTrack | null;
   isPlaying: boolean;
-  play: (track: Track) => void;
+  isLoading: boolean;
+  error: string;
+  play: (track: PlayableTrack, token: string) => Promise<void>;
   pause: () => void;
   resume: () => void;
 }
@@ -20,7 +26,22 @@ interface PlayerState {
 export const usePlayerStore = create<PlayerState>((set) => ({
   currentTrack: null,
   isPlaying: false,
-  play: (track) => set({ currentTrack: track, isPlaying: true }),
+  isLoading: false,
+  error: '',
+
+  play: async (track, token) => {
+    set({ isLoading: true, error: '' });
+    try {
+      const { audioUrl } = await api.tracks.play(token, track.id);
+      set({ currentTrack: { ...track, audioUrl }, isPlaying: true, isLoading: false });
+    } catch (err) {
+      set({
+        error: err instanceof Error ? err.message : 'Failed to play track',
+        isLoading: false,
+      });
+    }
+  },
+
   pause: () => set({ isPlaying: false }),
   resume: () => set({ isPlaying: true }),
 }));
