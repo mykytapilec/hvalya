@@ -20,7 +20,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <a href="/tracks">Tracks</a>
         <a href="/artists">Artists</a>
         {role === 'LISTENER' && <a href="/become-artist">Become an Artist</a>}
+        {role === 'ARTIST' && <a href="/profile">My Profile</a>}
         {role === 'ADMIN' && <a href="/admin/applications">Applications</a>}
+        {role === 'ADMIN' && <a href="/admin/artists">Manage Artists</a>}
         {role && (
           <span style={{ marginLeft: 'auto', color: '#888', fontSize: 13 }}>
             {role}
