@@ -45,6 +45,8 @@ export class ArtistsPrismaRepository implements IArtistRepository {
     return new ArtistEntity(
       raw.id,
       raw.name,
+      raw.bio,
+      raw.socialLinks,
       raw.userId,
       raw.createdAt,
       raw.updatedAt,

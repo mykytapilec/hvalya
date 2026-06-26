@@ -1,12 +1,36 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Brand palette */
+  --brand-blue: #1e40af;
+  --brand-blue-light: #3b82f6;
+  --brand-blue-dark: #1e3a8a;
+  --brand-yellow: #facc15;
+  --brand-yellow-light: #fde047;
+  --brand-yellow-dark: #ca8a04;
+
+  /* Semantic */
+  --color-primary: var(--brand-blue);
+  --color-accent: var(--brand-yellow);
+  --color-danger: #dc2626;
+  --color-success: #16a34a;
+  --color-border: #e5e7eb;
+  --color-muted: #6b7280;
+
+  --modal-bg: #ffffff;
+  --modal-text: #171717;
+  --modal-overlay: rgba(17, 24, 39, 0.55);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --color-border: #2a2a2a;
+    --color-muted: #9ca3af;
+    --modal-bg: #171717;
+    --modal-text: #ededed;
   }
 }
 
@@ -40,11 +64,81 @@ a {
   html {
     color-scheme: dark;
   }
-
   .imgLight {
     display: none;
   }
   .imgDark {
     display: unset;
   }
+}
+
+/* ── Buttons ──────────────────────────────────────────── */
+button {
+  font-family: inherit;
+  font-size: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  background: var(--modal-bg);
+  color: var(--modal-text);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+button:hover {
+  border-color: var(--color-primary);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.btn-primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+button.btn-primary:hover {
+  background: var(--brand-blue-dark);
+}
+
+button.btn-accent {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #171717;
+}
+
+button.btn-accent:hover {
+  background: var(--brand-yellow-dark);
+}
+
+button.btn-danger {
+  background: transparent;
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+button.btn-danger:hover {
+  background: var(--color-danger);
+  color: #ffffff;
+}
+
+/* ── Inputs ───────────────────────────────────────────── */
+input,
+textarea {
+  font-family: inherit;
+  font-size: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--modal-bg);
+  color: var(--modal-text);
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
 }

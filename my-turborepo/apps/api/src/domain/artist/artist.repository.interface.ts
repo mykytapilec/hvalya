@@ -2,11 +2,15 @@ import { ArtistEntity } from './artist.entity';
 
 export interface ICreateArtistData {
   name: string;
+  bio?: string;
+  socialLinks?: string;
   userId: string;
 }
 
 export interface IUpdateArtistData {
   name?: string;
+  bio?: string;
+  socialLinks?: string;
 }
 
 export interface IArtistRepository {

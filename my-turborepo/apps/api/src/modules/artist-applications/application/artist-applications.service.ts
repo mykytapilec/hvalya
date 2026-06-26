@@ -76,6 +76,8 @@ export class ArtistApplicationsService {
     if (!existingArtist) {
       await this.artistRepository.create({
         name: `Artist-${application.userId.slice(0, 8)}`,
+        bio: application.bio,
+        socialLinks: application.socialLinks,
         userId: application.userId,
       });
     }
