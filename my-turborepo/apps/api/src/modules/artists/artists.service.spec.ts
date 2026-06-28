@@ -17,6 +17,8 @@ const mockArtistRepository = {
 const mockArtist = new ArtistEntity(
   'artist-uuid',
   'Test Artist',
+  null,
+  null,
   'user-uuid',
   new Date(),
   new Date(),
