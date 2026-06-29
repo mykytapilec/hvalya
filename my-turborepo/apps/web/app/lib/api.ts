@@ -12,6 +12,8 @@ export interface Track {
 export interface Artist {
   id: string;
   name: string;
+  bio: string | null;
+  socialLinks: string | null;
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -82,7 +84,8 @@ export const api = {
   },
   artists: {
     findAll: (token?: string) => request<Artist[]>('/artists', {}, token),
-    update: (token: string, id: string, data: Partial<Pick<Artist, 'name'>>) =>
+    findMe: (token: string) => request<Artist>('/artists/me', {}, token),
+    update: (token: string, id: string, data: Partial<Pick<Artist, 'name' | 'bio' | 'socialLinks'>>) =>
       request<Artist>(
         `/artists/${id}`,
         { method: 'PATCH', body: JSON.stringify(data) },
