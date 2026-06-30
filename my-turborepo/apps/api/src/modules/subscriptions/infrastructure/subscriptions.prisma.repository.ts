@@ -5,7 +5,7 @@ import {
   ISubscriptionRepository,
   ICreateSubscriptionData,
   IUpdateSubscriptionData,
-} from '../../../modules/subscriptions/subscription.repository.interface';
+} from '../subscription.repository.interface';
 import { SubscriptionEntity } from '../../../domain/subscription/subscription.entity';
 import { SubscriptionTier, SubscriptionStatus } from '@hvalya/types';
 
@@ -44,6 +44,7 @@ export class SubscriptionsPrismaRepository implements ISubscriptionRepository {
       raw.tier as unknown as SubscriptionTier,
       raw.status as unknown as SubscriptionStatus,
       raw.startedAt,
+      raw.trialEndsAt,
       raw.expiresAt,
       raw.createdAt,
       raw.updatedAt,

@@ -29,11 +29,24 @@ export class SubscriptionsService {
     const existing = await this.subscriptionRepository.findByUserId(userId);
     if (existing) throw new ConflictException('Subscription already exists');
 
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 30);
+
     return this.subscriptionRepository.create({
       userId,
       tier: SubscriptionTier.FREE,
       status: SubscriptionStatus.ACTIVE,
+      trialEndsAt,
     });
+  }
+
+  async isPlaybackAllowed(userId: string): Promise<boolean> {
+    const sub = await this.subscriptionRepository.findByUserId(userId);
+    if (!sub) return false;
+    if (sub.status !== SubscriptionStatus.ACTIVE) return false;
+    if (sub.tier === SubscriptionTier.STANDARD) return true;
+    if (!sub.trialEndsAt) return false;
+    return sub.trialEndsAt.getTime() > Date.now();
   }
 
   async upgrade(userId: string, dto: UpdateSubscriptionDto): Promise<SubscriptionEntity> {

@@ -14,11 +14,13 @@ import {
 import { UserRole } from '@hvalya/types';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { TrialGuard } from '../../common/guards/trial.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { TracksService } from './application/tracks.service';
 import { ArtistsService } from '../artists/application/artists.service';
 import { CreateTrackDto } from './application/dto/create-track.dto';
 import { UpdateTrackDto } from './application/dto/update-track.dto';
+import { TrackEntity } from '../../domain/track/track.entity';
 
 interface AuthenticatedRequest {
   user: { id: string; email: string; username: string; role: UserRole };
@@ -32,13 +34,22 @@ export class TracksController {
   ) {}
 
   @Get()
-  findAll() {
-    return this.tracksService.findAll();
+  async findAll() {
+    const tracks = await this.tracksService.findAll();
+    return tracks.map((t) => this.toPublicTrack(t));
   }
 
   @Get(':id')
-  findById(@Param('id') id: string) {
-    return this.tracksService.findById(id);
+  async findById(@Param('id') id: string) {
+    const track = await this.tracksService.findById(id);
+    return this.toPublicTrack(track);
+  }
+
+  @Get(':id/play')
+  @UseGuards(JwtAuthGuard, TrialGuard)
+  async getPlayUrl(@Param('id') id: string) {
+    const track = await this.tracksService.findById(id);
+    return { audioUrl: track.audioUrl };
   }
 
   @Post()
@@ -74,5 +85,10 @@ export class TracksController {
     if (req.user.role === UserRole.ADMIN) return '';
     const artist = await this.artistsService.findByUserId(req.user.id);
     return artist.id;
+  }
+
+  private toPublicTrack(track: TrackEntity) {
+    const { audioUrl, ...publicFields } = track;
+    return publicFields;
   }
 }
