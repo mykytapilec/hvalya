@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { Audio } from 'expo-av';
 import { usePlayerStore } from '../store/player';
 
 export function Player() {
-  const { currentTrack, isPlaying, pause, resume } = usePlayerStore();
+  const { currentTrack, isPlaying, isLoading, error, pause, resume } = usePlayerStore();
   const soundRef = useRef<Audio.Sound | null>(null);
 
   useEffect(() => {
@@ -38,16 +38,29 @@ export function Player() {
     }
   }, [isPlaying]);
 
-  if (!currentTrack) return null;
+  if (!currentTrack && !error && !isLoading) return null;
 
   return (
     <View style={styles.bar}>
-      <Text style={styles.title} numberOfLines={1}>
-        {currentTrack.title}
-      </Text>
-      <Pressable onPress={isPlaying ? pause : resume}>
-        <Text style={styles.icon}>{isPlaying ? '⏸' : '▶'}</Text>
-      </Pressable>
+      {error ? (
+        <Text style={styles.error} numberOfLines={2}>
+          {error}
+        </Text>
+      ) : isLoading ? (
+        <>
+          <Text style={styles.title}>Loading...</Text>
+          <ActivityIndicator color="#fff" />
+        </>
+      ) : (
+        <>
+          <Text style={styles.title} numberOfLines={1}>
+            {currentTrack?.title}
+          </Text>
+          <Pressable onPress={isPlaying ? pause : resume}>
+            <Text style={styles.icon}>{isPlaying ? '⏸' : '▶'}</Text>
+          </Pressable>
+        </>
+      )}
     </View>
   );
 }
@@ -66,5 +79,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: { color: '#fff', fontSize: 15, flex: 1, marginRight: 12 },
+  error: { color: '#ef4444', fontSize: 13, flex: 1 },
   icon: { color: '#fff', fontSize: 20 },
 });
