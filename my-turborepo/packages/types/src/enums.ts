@@ -21,3 +21,11 @@ export enum ArtistApplicationStatus {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
 }
+
+export enum ReleaseType {
+  SINGLE = 'SINGLE',
+  EP = 'EP',
+  ALBUM = 'ALBUM',
+  SPLIT = 'SPLIT',
+  OTHER = 'OTHER',
+}

@@ -14,6 +14,14 @@ enum UserRole {
   ADMIN
 }
 
+enum ReleaseType {
+  SINGLE
+  EP
+  ALBUM
+  SPLIT
+  OTHER
+}
+
 enum SubscriptionTier {
   FREE
   STANDARD
@@ -124,7 +132,7 @@ model Album {
 
   tracks  Track[]
   artists AlbumArtist[]
-
+  type ReleaseType @default(ALBUM)
   @@map("albums")
 }
 
