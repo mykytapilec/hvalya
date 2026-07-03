@@ -27,6 +27,13 @@ interface AuthenticatedRequest {
 export class ArtistsController {
   constructor(private readonly artistsService: ArtistsService) {}
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ARTIST)
+  findMine(@Request() req: AuthenticatedRequest) {
+    return this.artistsService.findByUserId(req.user.id);
+  }
+
   @Get()
   findAll() {
     return this.artistsService.findAll();

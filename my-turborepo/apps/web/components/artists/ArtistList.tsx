@@ -1,16 +1,14 @@
 'use client';
 
-import { useAuthStore } from "../../app/store/auth.store";
+import { type Artist } from "../../app/lib/api";
 
-interface Artist {
-  id: string;
-  name: string;
+interface ArtistListProps {
+  artists: Artist[];
+  myArtistId?: string | null;
+  onArtistsChange?: (artists: Artist[]) => void;
 }
 
-export default function ArtistList({ artists }: { artists: Artist[] }) {
-  const role = useAuthStore((s) => s.role);
-  const canManage = role === 'ARTIST' || role === 'ADMIN';
-
+export default function ArtistList({ artists }: ArtistListProps) {
   if (artists.length === 0) {
     return <p>No artists yet.</p>;
   }
@@ -29,12 +27,6 @@ export default function ArtistList({ artists }: { artists: Artist[] }) {
           }}
         >
           <strong>{artist.name}</strong>
-          {canManage && (
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button>Edit</button>
-              <button style={{ color: 'red' }}>Delete</button>
-            </div>
-          )}
         </li>
       ))}
     </ul>

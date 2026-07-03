@@ -7,6 +7,7 @@ export class SubscriptionEntity {
     public readonly tier: SubscriptionTier,
     public readonly status: SubscriptionStatus,
     public readonly startedAt: Date,
+    public readonly trialEndsAt: Date | null,
     public readonly expiresAt: Date | null,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,

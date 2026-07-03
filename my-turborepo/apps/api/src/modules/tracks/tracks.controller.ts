@@ -7,18 +7,25 @@ import {
   Body,
   Param,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
   Request,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { UserRole } from '@hvalya/types';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { TrialGuard } from '../../common/guards/trial.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { TracksService } from './application/tracks.service';
-import { ArtistsService } from '../artists/application/artists.service';
+import { ArtistsService } from '../artists//application/artists.service';
 import { CreateTrackDto } from './application/dto/create-track.dto';
 import { UpdateTrackDto } from './application/dto/update-track.dto';
+import { TrackEntity } from '../../domain/track/track.entity';
 
 interface AuthenticatedRequest {
   user: { id: string; email: string; username: string; role: UserRole };
@@ -32,13 +39,48 @@ export class TracksController {
   ) {}
 
   @Get()
-  findAll() {
-    return this.tracksService.findAll();
+  async findAll() {
+    const tracks = await this.tracksService.findAll();
+    return tracks.map((t) => this.toPublicTrack(t));
   }
 
   @Get(':id')
-  findById(@Param('id') id: string) {
-    return this.tracksService.findById(id);
+  async findById(@Param('id') id: string) {
+    const track = await this.tracksService.findById(id);
+    return this.toPublicTrack(track);
+  }
+
+  @Get(':id/play')
+  @UseGuards(JwtAuthGuard, TrialGuard)
+  async getPlayUrl(@Param('id') id: string) {
+    const track = await this.tracksService.findById(id);
+    return { audioUrl: track.audioUrl };
+  }
+
+  @Post('upload')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ARTIST, UserRole.ADMIN)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/audio',
+        filename: (_req, file, cb) => {
+          const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+          cb(null, `${unique}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: (_req, file, cb) => {
+        if (!file.mimetype.startsWith('audio/')) {
+          return cb(new Error('Only audio files are allowed'), false);
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 50 * 1024 * 1024 },
+    }),
+  )
+  async uploadAudio(@UploadedFile() file: Express.Multer.File) {
+    const audioUrl = `${process.env.API_URL ?? 'http://localhost:3001'}/uploads/audio/${file.filename}`;
+    return { audioUrl };
   }
 
   @Post()
@@ -74,5 +116,10 @@ export class TracksController {
     if (req.user.role === UserRole.ADMIN) return '';
     const artist = await this.artistsService.findByUserId(req.user.id);
     return artist.id;
+  }
+
+  private toPublicTrack(track: TrackEntity) {
+    const { audioUrl, ...publicFields } = track;
+    return publicFields;
   }
 }

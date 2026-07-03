@@ -5,6 +5,7 @@ export interface ICreateSubscriptionData {
   userId: string;
   tier: SubscriptionTier;
   status: SubscriptionStatus;
+  trialEndsAt?: Date;
   expiresAt?: Date;
 }
 

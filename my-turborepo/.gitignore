@@ -32,4 +32,4 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
-lerna-debug.log*
+lerna-debug.log**.tsbuildinfo
