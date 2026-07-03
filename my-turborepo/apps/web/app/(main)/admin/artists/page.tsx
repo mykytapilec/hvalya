@@ -30,19 +30,15 @@ export default function AdminArtistsPage() {
 
   if (!isInitialized) return <p>Loading...</p>;
   if (role !== 'ADMIN') return null;
+  if (isLoading) return <p>Loading...</p>;
 
   async function handleConfirmDelete() {
     if (!deletingArtist) return;
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
+    if (!token) throw new Error('Not authenticated');
     await api.artists.delete(token, deletingArtist.id);
     setArtists((prev) => prev.filter((a) => a.id !== deletingArtist.id));
     setDeletingArtist(null);
   }
-
-  if (role !== 'ADMIN') return null;
-  if (isLoading) return <p>Loading...</p>;
 
   return (
     <div>
@@ -66,9 +62,7 @@ export default function AdminArtistsPage() {
           </li>
         ))}
       </ul>
-
       {artists.length === 0 && <p>No artists yet.</p>}
-
       {deletingArtist && (
         <ConfirmDeleteModal
           title="Delete Artist"
