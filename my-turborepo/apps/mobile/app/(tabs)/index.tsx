@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
-import { View, Text, FlatList, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
 import { api, type Track } from '../../lib/api';
+import { useAuthStore } from '../../store/auth';
 import { usePlayerStore } from '../../store/player';
 import { Player } from '../../components/Player';
 
 export default function TracksScreen() {
+  const router = useRouter();
+  const token = useAuthStore((s) => s.token);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const play = usePlayerStore((s) => s.play);
@@ -12,11 +16,22 @@ export default function TracksScreen() {
 
   useEffect(() => {
     api.tracks
-      .findAll()
+      .findAll(token ?? undefined)
       .then(setTracks)
       .catch(() => setTracks([]))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [token]);
+
+  async function handlePlay(track: Track) {
+    if (!token) {
+      Alert.alert('Sign in required', 'Please log in to listen to tracks.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Log in', onPress: () => router.push('/(auth)/login') },
+      ]);
+      return;
+    }
+    await play(track, token);
+  }
 
   if (isLoading) {
     return (
@@ -35,7 +50,7 @@ export default function TracksScreen() {
         contentContainerStyle={{ paddingBottom: 100 }}
         ListEmptyComponent={<Text style={styles.empty}>No tracks yet.</Text>}
         renderItem={({ item }) => (
-          <Pressable style={styles.row} onPress={() => play(item)}>
+          <Pressable style={styles.row} onPress={() => handlePlay(item)}>
             <View>
               <Text style={styles.title}>{item.title}</Text>
               <Text style={styles.duration}>

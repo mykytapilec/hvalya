@@ -19,9 +19,12 @@ export interface Track {
   id: string;
   title: string;
   duration: number;
-  audioUrl: string;
   artistId: string;
   albumId: string | null;
+}
+
+export interface TrackPlayback {
+  audioUrl: string;
 }
 
 export interface Subscription {
@@ -48,7 +51,18 @@ async function request<T>(
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Request failed');
+    const rawMessage = error?.message?.message ?? error?.message ?? 'Request failed';
+    const message =
+      typeof rawMessage === 'string'
+        ? rawMessage
+        : Array.isArray(rawMessage)
+          ? rawMessage.join(', ')
+          : 'Request failed';
+    throw new Error(message);
+  }
+
+  if (res.status === 204) {
+    return undefined as T;
   }
 
   return res.json();
@@ -68,7 +82,9 @@ export const api = {
       }),
   },
   tracks: {
-    findAll: () => request<Track[]>('/tracks'),
+    findAll: (token?: string) => request<Track[]>('/tracks', {}, token),
+    play: (token: string, id: string) =>
+      request<TrackPlayback>(`/tracks/${id}/play`, {}, token),
   },
   subscriptions: {
     getMine: (token: string) => request<Subscription>('/subscriptions/me', {}, token),
