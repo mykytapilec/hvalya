@@ -46,7 +46,7 @@ export class ReleasesService {
       artistIds: [artistId],
       tracks: dto.tracks.map((t) => ({
         title: t.title,
-        duration: t.duration,
+        duration: t.duration ?? 0,
         audioUrl: t.audioUrl,
         artistId,
       })),

@@ -3,8 +3,9 @@ import { ArtistApplicationStatus } from '@hvalya/types';
 
 export interface ICreateArtistApplicationData {
   userId: string;
+  name: string;
   bio: string;
-  socialLinks: string;
+  socialLinks?: string;
 }
 
 export interface IUpdateArtistApplicationData {

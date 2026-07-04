@@ -7,9 +7,10 @@ export class CreateTrackInReleaseDto {
   @MinLength(1)
   title!: string;
 
+  @IsOptional()
   @IsInt()
-  @Min(1)
-  duration!: number;
+  @Min(0)
+  duration?: number;
 
   @IsString()
   @MinLength(1)

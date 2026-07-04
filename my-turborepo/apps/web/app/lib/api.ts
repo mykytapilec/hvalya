@@ -187,7 +187,7 @@ export const api = {
       request<void>(`/releases/${id}`, { method: 'DELETE' }, token),
   },
   artistApplications: {
-    apply: (token: string, data: { bio: string; socialLinks: string }) =>
+    apply: (token: string, data: { name: string; bio: string; socialLinks: string }) =>
       request<ArtistApplication>(
         '/artist-applications',
         { method: 'POST', body: JSON.stringify(data) },

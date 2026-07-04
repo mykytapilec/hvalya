@@ -33,3 +33,4 @@ Thumbs.db
 *.log
 npm-debug.log*
 lerna-debug.log**.tsbuildinfo
+apps/api/uploads/

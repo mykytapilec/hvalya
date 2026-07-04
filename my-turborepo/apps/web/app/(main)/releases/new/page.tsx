@@ -9,14 +9,27 @@ const RELEASE_TYPES: ReleaseType[] = ['SINGLE', 'EP', 'ALBUM', 'SPLIT', 'OTHER']
 
 interface TrackForm {
   title: string;
-  duration: string;
   audioMode: 'url' | 'file';
   audioUrl: string;
   audioFile: File | null;
 }
 
 function emptyTrack(): TrackForm {
-  return { title: '', duration: '', audioMode: 'url', audioUrl: '', audioFile: null };
+  return { title: '', audioMode: 'url', audioUrl: '', audioFile: null };
+}
+
+async function getAudioDuration(source: File | string): Promise<number> {
+  return new Promise((resolve) => {
+    const audio = new Audio();
+    const url = source instanceof File ? URL.createObjectURL(source) : source;
+    audio.src = url;
+    audio.addEventListener('loadedmetadata', () => {
+      const duration = Math.round(audio.duration) || 0;
+      if (source instanceof File) URL.revokeObjectURL(url);
+      resolve(duration);
+    });
+    audio.addEventListener('error', () => resolve(0));
+  });
 }
 
 export default function NewReleasePage() {
@@ -37,9 +50,7 @@ export default function NewReleasePage() {
 
   useEffect(() => {
     if (!isInitialized) return;
-    if (role !== 'ARTIST') {
-      router.replace('/');
-    }
+    if (role !== 'ARTIST') router.replace('/');
   }, [isInitialized, role, router]);
 
   if (!isInitialized || role !== 'ARTIST') return null;
@@ -58,44 +69,45 @@ export default function NewReleasePage() {
 
   async function handleSubmit() {
     if (!token) return;
+    if (!title.trim()) { setError('Title is required'); return; }
+    if (!releasedAt) { setError('Release date is required'); return; }
     setError('');
     setIsSubmitting(true);
 
     try {
-        const resolvedTracks = await Promise.all(
+      const resolvedTracks = await Promise.all(
         tracks.map(async (t) => {
-            let audioUrl = t.audioUrl;
-            if (t.audioMode === 'file' && t.audioFile) {
+          let audioUrl = t.audioUrl;
+          if (t.audioMode === 'file' && t.audioFile) {
             const res = await api.tracks.upload(token, t.audioFile);
             audioUrl = res.audioUrl ?? '';
-            }
-            return {
-            title: t.title,
-            duration: parseInt(t.duration, 10),
-            audioUrl,
-            };
+          }
+          const duration = await getAudioDuration(
+            t.audioMode === 'file' && t.audioFile ? t.audioFile : audioUrl,
+          );
+          return { title: t.title, duration, audioUrl };
         }),
-        );
+      );
 
-        const release = await api.releases.create(token, {
+      const release = await api.releases.create(token, {
         title,
         type,
-        releasedAt,
-        coverUrl: coverMode === 'url' ? coverUrl || undefined : undefined,
+        releasedAt: new Date(releasedAt).toISOString(),
+        coverUrl: coverMode === 'url' && coverUrl.trim() ? coverUrl.trim() : undefined,
         tracks: resolvedTracks,
-        });
+      });
 
-        if (coverMode === 'file' && coverFile) {
+      if (coverMode === 'file' && coverFile) {
         await api.releases.uploadCover(token, release.id, coverFile);
-        }
+      }
 
-        router.push(`/releases/${release.id}`);
+      router.push(`/releases/${release.id}`);
     } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to create release');
+      setError(err instanceof Error ? err.message : 'Failed to create release');
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
-    }
+  }
 
   return (
     <div style={{ maxWidth: 600 }}>
@@ -125,47 +137,22 @@ export default function NewReleasePage() {
 
       <label>Cover</label>
       <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-        <button
-          onClick={() => setCoverMode('url')}
-          className={coverMode === 'url' ? 'btn-primary' : ''}
-        >
-          URL
-        </button>
-        <button
-          onClick={() => setCoverMode('file')}
-          className={coverMode === 'file' ? 'btn-primary' : ''}
-        >
-          Upload file
-        </button>
+        <button onClick={() => setCoverMode('url')} className={coverMode === 'url' ? 'btn-primary' : ''}>URL</button>
+        <button onClick={() => setCoverMode('file')} className={coverMode === 'file' ? 'btn-primary' : ''}>Upload file</button>
       </div>
       {coverMode === 'url' ? (
-        <input
-          value={coverUrl}
-          onChange={(e) => setCoverUrl(e.target.value)}
-          placeholder="https://..."
-          style={{ width: '100%' }}
-        />
+        <input value={coverUrl} onChange={(e) => setCoverUrl(e.target.value)} placeholder="https://..." style={{ width: '100%' }} />
       ) : (
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
-          style={{ width: '100%' }}
-        />
+        <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} style={{ width: '100%' }} />
       )}
 
       <h2 style={{ marginTop: 24, marginBottom: 12 }}>Tracks</h2>
       {tracks.map((track, index) => (
-        <div
-          key={index}
-          style={{ border: '1px solid var(--color-border)', borderRadius: 8, padding: 16, marginBottom: 12 }}
-        >
+        <div key={index} style={{ border: '1px solid var(--color-border)', borderRadius: 8, padding: 16, marginBottom: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <strong>Track {index + 1}</strong>
             {tracks.length > 1 && (
-              <button className="btn-danger" onClick={() => removeTrack(index)}>
-                Remove
-              </button>
+              <button className="btn-danger" onClick={() => removeTrack(index)}>Remove</button>
             )}
           </div>
 
@@ -176,28 +163,10 @@ export default function NewReleasePage() {
             style={{ width: '100%' }}
           />
 
-          <label>Duration (seconds)</label>
-          <input
-            type="number"
-            value={track.duration}
-            onChange={(e) => updateTrack(index, { duration: e.target.value })}
-            style={{ width: '100%' }}
-          />
-
           <label>Audio</label>
           <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-            <button
-              onClick={() => updateTrack(index, { audioMode: 'url' })}
-              className={track.audioMode === 'url' ? 'btn-primary' : ''}
-            >
-              URL
-            </button>
-            <button
-              onClick={() => updateTrack(index, { audioMode: 'file' })}
-              className={track.audioMode === 'file' ? 'btn-primary' : ''}
-            >
-              Upload file
-            </button>
+            <button onClick={() => updateTrack(index, { audioMode: 'url' })} className={track.audioMode === 'url' ? 'btn-primary' : ''}>URL</button>
+            <button onClick={() => updateTrack(index, { audioMode: 'file' })} className={track.audioMode === 'file' ? 'btn-primary' : ''}>Upload file</button>
           </div>
           {track.audioMode === 'url' ? (
             <input
@@ -217,9 +186,7 @@ export default function NewReleasePage() {
         </div>
       ))}
 
-      <button onClick={addTrack} style={{ marginBottom: 16 }}>
-        + Add Track
-      </button>
+      <button onClick={addTrack} style={{ marginBottom: 16 }}>+ Add Track</button>
 
       {error && <p style={{ color: 'var(--color-danger)', marginTop: 12 }}>{error}</p>}
 

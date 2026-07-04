@@ -17,7 +17,7 @@ export class ArtistApplicationsPrismaRepository implements IArtistApplicationRep
     const applications = await this.prisma.artistApplication.findMany({
       orderBy: { createdAt: 'desc' },
     });
-    return applications.map(this.toEntity);
+    return applications.map((a) => this.toEntity(a));
   }
 
   async findById(id: string): Promise<ArtistApplicationEntity | null> {
@@ -38,11 +38,18 @@ export class ArtistApplicationsPrismaRepository implements IArtistApplicationRep
       where: { status: 'PENDING' },
       orderBy: { createdAt: 'asc' },
     });
-    return applications.map(this.toEntity);
+    return applications.map((a) => this.toEntity(a));
   }
 
   async create(data: ICreateArtistApplicationData): Promise<ArtistApplicationEntity> {
-    const application = await this.prisma.artistApplication.create({ data });
+    const application = await this.prisma.artistApplication.create({
+      data: {
+        userId: data.userId,
+        name: data.name,
+        bio: data.bio,
+        socialLinks: data.socialLinks ?? '',
+      },
+    });
     return this.toEntity(application);
   }
 
@@ -58,6 +65,7 @@ export class ArtistApplicationsPrismaRepository implements IArtistApplicationRep
     return new ArtistApplicationEntity(
       raw.id,
       raw.userId,
+      raw.name,
       raw.bio,
       raw.socialLinks,
       raw.status as unknown as ArtistApplicationStatus,

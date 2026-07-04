@@ -38,9 +38,9 @@ export class ArtistApplicationsService {
     if (existing && existing.status === ArtistApplicationStatus.PENDING) {
       throw new ConflictException('You already have a pending artist application');
     }
-
     return this.applicationRepository.create({
       userId,
+      name: dto.name,
       bio: dto.bio,
       socialLinks: dto.socialLinks,
     });
@@ -75,9 +75,9 @@ export class ArtistApplicationsService {
     const existingArtist = await this.artistRepository.findByUserId(application.userId);
     if (!existingArtist) {
       await this.artistRepository.create({
-        name: `Artist-${application.userId.slice(0, 8)}`,
+        name: application.name,
         bio: application.bio,
-        socialLinks: application.socialLinks,
+        socialLinks: application.socialLinks ?? '',
         userId: application.userId,
       });
     }
@@ -91,7 +91,6 @@ export class ArtistApplicationsService {
     if (application.status !== ArtistApplicationStatus.PENDING) {
       throw new BadRequestException('Application has already been reviewed');
     }
-
     return this.applicationRepository.update(id, {
       status: ArtistApplicationStatus.REJECTED,
       reviewedAt: new Date(),
