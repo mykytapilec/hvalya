@@ -27,6 +27,28 @@ export interface TrackPlayback {
   audioUrl: string;
 }
 
+export interface ReleaseTrack {
+  id: string;
+  title: string;
+  duration: number;
+  artistId: string;
+  albumId: string | null;
+}
+
+export type ReleaseType = 'SINGLE' | 'EP' | 'ALBUM' | 'SPLIT' | 'OTHER';
+
+export interface Release {
+  id: string;
+  title: string;
+  type: ReleaseType;
+  coverUrl: string | null;
+  releasedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  artistIds: string[];
+  tracks: ReleaseTrack[];
+}
+
 export interface Subscription {
   id: string;
   userId: string;
@@ -85,6 +107,10 @@ export const api = {
     findAll: (token?: string) => request<Track[]>('/tracks', {}, token),
     play: (token: string, id: string) =>
       request<TrackPlayback>(`/tracks/${id}/play`, {}, token),
+  },
+  releases: {
+    findAll: () => request<Release[]>('/releases'),
+    findById: (id: string) => request<Release>(`/releases/${id}`),
   },
   subscriptions: {
     getMine: (token: string) => request<Subscription>('/subscriptions/me', {}, token),

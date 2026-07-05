@@ -4,6 +4,7 @@ export default function TabsLayout() {
   return (
     <Tabs screenOptions={{ headerShown: false }}>
       <Tabs.Screen name="index" options={{ title: 'Tracks' }} />
+      <Tabs.Screen name="releases" options={{ title: 'Releases' }} />
       <Tabs.Screen name="subscription" options={{ title: 'Subscription' }} />
       <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
     </Tabs>

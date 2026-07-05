@@ -1,40 +1,26 @@
 import { useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
-import { Audio } from 'expo-av';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { usePlayerStore } from '../store/player';
 
 export function Player() {
-  const { currentTrack, isPlaying, isLoading, error, pause, resume } = usePlayerStore();
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const { currentTrack, isPlaying, isLoading, error, pause, resume, stop } = usePlayerStore();
+  const player = useAudioPlayer(
+    currentTrack ? { uri: currentTrack.audioUrl } : null
+  );
+  const status = useAudioPlayerStatus(player);
 
   useEffect(() => {
-    async function loadAndPlay() {
-      if (!currentTrack) return;
-
-      if (soundRef.current) {
-        await soundRef.current.unloadAsync();
-      }
-
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: currentTrack.audioUrl },
-        { shouldPlay: true },
-      );
-      soundRef.current = sound;
-    }
-
-    loadAndPlay();
-
-    return () => {
-      soundRef.current?.unloadAsync();
-    };
+    if (!currentTrack) return;
+    player.play();
   }, [currentTrack]);
 
   useEffect(() => {
-    if (!soundRef.current) return;
+    if (!player) return;
     if (isPlaying) {
-      soundRef.current.playAsync();
+      player.play();
     } else {
-      soundRef.current.pauseAsync();
+      player.pause();
     }
   }, [isPlaying]);
 
@@ -43,9 +29,7 @@ export function Player() {
   return (
     <View style={styles.bar}>
       {error ? (
-        <Text style={styles.error} numberOfLines={2}>
-          {error}
-        </Text>
+        <Text style={styles.error} numberOfLines={2}>{error}</Text>
       ) : isLoading ? (
         <>
           <Text style={styles.title}>Loading...</Text>
