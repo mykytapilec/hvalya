@@ -49,12 +49,23 @@ export interface Release {
   tracks: ReleaseTrack[];
 }
 
+export interface Artist {
+  id: string;
+  name: string;
+  bio: string | null;
+  socialLinks: string | null;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Subscription {
   id: string;
   userId: string;
   tier: 'FREE' | 'STANDARD';
   status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'PAST_DUE';
   startedAt: string;
+  trialEndsAt: string | null;
   expiresAt: string | null;
 }
 
@@ -111,6 +122,11 @@ export const api = {
   releases: {
     findAll: () => request<Release[]>('/releases'),
     findById: (id: string) => request<Release>(`/releases/${id}`),
+  },
+  artists: {
+    findMe: (token: string) => request<Artist>('/artists/me', {}, token),
+    update: (token: string, id: string, data: Partial<Pick<Artist, 'name' | 'bio' | 'socialLinks'>>) =>
+      request<Artist>(`/artists/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, token),
   },
   subscriptions: {
     getMine: (token: string) => request<Subscription>('/subscriptions/me', {}, token),
