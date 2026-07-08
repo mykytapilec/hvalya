@@ -10,6 +10,7 @@ import { TracksModule } from './modules/tracks/tracks.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { ArtistApplicationsModule } from './modules/artist-applications/artist-applications.module';
 import { ReleasesModule } from './modules/releases/releases.module';
+import { InternalModule } from './internal/internal.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ReleasesModule } from './modules/releases/releases.module';
     SubscriptionsModule,
     ArtistApplicationsModule,
     ReleasesModule,
+    InternalModule,
   ],
   controllers: [AppController],
 })
