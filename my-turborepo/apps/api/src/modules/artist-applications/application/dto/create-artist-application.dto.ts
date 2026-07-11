@@ -1,13 +1,15 @@
-import { IsString, MinLength, MaxLength } from 'class-validator';
+import { IsString, MinLength, IsOptional } from 'class-validator';
 
 export class CreateArtistApplicationDto {
   @IsString()
-  @MinLength(50)
-  @MaxLength(2000)
-  bio!: string;
+  @MinLength(1)
+  name!: string;
 
   @IsString()
   @MinLength(1)
-  @MaxLength(1000)
-  socialLinks!: string;
+  bio!: string;
+
+  @IsOptional()
+  @IsString()
+  socialLinks?: string;
 }

@@ -16,6 +16,6 @@ export class UpdateReleaseDto {
   releasedAt?: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   coverUrl?: string;
 }

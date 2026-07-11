@@ -15,10 +15,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (isLoading) return;
-
     const inAuthGroup = segments[0] === '(auth)';
-
-    if (!token && !inAuthGroup) {
+    const inReleaseDetail = segments[0] === 'releases';
+    if (!token && !inAuthGroup && !inReleaseDetail) {
       router.replace('/(auth)/login');
     } else if (token && inAuthGroup) {
       router.replace('/(tabs)');
@@ -30,6 +29,7 @@ export default function RootLayout() {
       <Stack.Screen name="(auth)/login/index" />
       <Stack.Screen name="(auth)/register/index" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="releases/[id]" options={{ headerShown: true, title: 'Release' }} />
     </Stack>
   );
 }

@@ -19,9 +19,44 @@ export interface Track {
   id: string;
   title: string;
   duration: number;
-  audioUrl: string;
   artistId: string;
   albumId: string | null;
+}
+
+export interface TrackPlayback {
+  audioUrl: string;
+}
+
+export interface ReleaseTrack {
+  id: string;
+  title: string;
+  duration: number;
+  artistId: string;
+  albumId: string | null;
+}
+
+export type ReleaseType = 'SINGLE' | 'EP' | 'ALBUM' | 'SPLIT' | 'OTHER';
+
+export interface Release {
+  id: string;
+  title: string;
+  type: ReleaseType;
+  coverUrl: string | null;
+  releasedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  artistIds: string[];
+  tracks: ReleaseTrack[];
+}
+
+export interface Artist {
+  id: string;
+  name: string;
+  bio: string | null;
+  socialLinks: string | null;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Subscription {
@@ -30,6 +65,7 @@ export interface Subscription {
   tier: 'FREE' | 'STANDARD';
   status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'PAST_DUE';
   startedAt: string;
+  trialEndsAt: string | null;
   expiresAt: string | null;
 }
 
@@ -48,7 +84,18 @@ async function request<T>(
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message ?? 'Request failed');
+    const rawMessage = error?.message?.message ?? error?.message ?? 'Request failed';
+    const message =
+      typeof rawMessage === 'string'
+        ? rawMessage
+        : Array.isArray(rawMessage)
+          ? rawMessage.join(', ')
+          : 'Request failed';
+    throw new Error(message);
+  }
+
+  if (res.status === 204) {
+    return undefined as T;
   }
 
   return res.json();
@@ -68,7 +115,18 @@ export const api = {
       }),
   },
   tracks: {
-    findAll: () => request<Track[]>('/tracks'),
+    findAll: (token?: string) => request<Track[]>('/tracks', {}, token),
+    play: (token: string, id: string) =>
+      request<TrackPlayback>(`/tracks/${id}/play`, {}, token),
+  },
+  releases: {
+    findAll: () => request<Release[]>('/releases'),
+    findById: (id: string) => request<Release>(`/releases/${id}`),
+  },
+  artists: {
+    findMe: (token: string) => request<Artist>('/artists/me', {}, token),
+    update: (token: string, id: string, data: Partial<Pick<Artist, 'name' | 'bio' | 'socialLinks'>>) =>
+      request<Artist>(`/artists/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, token),
   },
   subscriptions: {
     getMine: (token: string) => request<Subscription>('/subscriptions/me', {}, token),
