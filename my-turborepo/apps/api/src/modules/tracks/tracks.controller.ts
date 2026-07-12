@@ -26,6 +26,7 @@ import { ArtistsService } from '../artists//application/artists.service';
 import { CreateTrackDto } from './application/dto/create-track.dto';
 import { UpdateTrackDto } from './application/dto/update-track.dto';
 import { TrackEntity } from '../../domain/track/track.entity';
+import { PlaysService } from '../plays/application/plays.service';
 
 interface AuthenticatedRequest {
   user: { id: string; email: string; username: string; role: UserRole };
@@ -36,6 +37,7 @@ export class TracksController {
   constructor(
     private readonly tracksService: TracksService,
     private readonly artistsService: ArtistsService,
+    private readonly playsService: PlaysService,
   ) {}
 
   @Get()
@@ -52,8 +54,9 @@ export class TracksController {
 
   @Get(':id/play')
   @UseGuards(JwtAuthGuard, TrialGuard)
-  async getPlayUrl(@Param('id') id: string) {
+  async getPlayUrl(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     const track = await this.tracksService.findById(id);
+    await this.playsService.recordPlay(req.user.id, id);
     return { audioUrl: track.audioUrl };
   }
 

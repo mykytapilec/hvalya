@@ -5,9 +5,10 @@ import { TracksPrismaRepository } from './infrastructure/tracks.prisma.repositor
 import { TRACK_REPOSITORY } from '../../domain/track/track.repository.interface';
 import { ArtistsModule } from '../artists/artists.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
+import { PlaysModule } from '../plays/plays.module';
 
 @Module({
-  imports: [ArtistsModule, SubscriptionsModule],
+  imports: [ArtistsModule, SubscriptionsModule, PlaysModule],
   controllers: [TracksController],
   providers: [
     TracksService,
