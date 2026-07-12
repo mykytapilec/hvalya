@@ -1,9 +1,9 @@
 from fastapi import APIRouter
 from app.schemas.recommendation import RecommendationResponse
-from app.models.stub_recommender import StubRecommender
+from app.models.content_based_recommender import ContentBasedRecommender
 
 router = APIRouter()
-recommender = StubRecommender()
+recommender = ContentBasedRecommender()
 
 
 @router.get("/recommend/{user_id}", response_model=RecommendationResponse)
