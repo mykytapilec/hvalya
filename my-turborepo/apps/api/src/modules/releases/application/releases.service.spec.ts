@@ -3,7 +3,7 @@ import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { ReleasesService } from './releases.service';
 import { RELEASE_REPOSITORY } from '../../../domain/release/release.repository.interface';
 import { ReleaseEntity } from '../../../domain/release/release.entity';
-import { ReleaseType, UserRole } from '@hvalya/types';
+import { ReleaseType, UserRole, Genre } from '@hvalya/types';
 
 const mockReleaseRepository = {
   findAll: jest.fn(),
@@ -23,6 +23,7 @@ const mockRelease = new ReleaseEntity(
   ReleaseType.SINGLE,
   null,
   now,
+  Genre.ROCK,
   now,
   now,
   ['artist-uuid'],
@@ -70,6 +71,7 @@ describe('ReleasesService', () => {
         title: 'Test Release',
         type: ReleaseType.SINGLE,
         releasedAt: now.toISOString(),
+        genre: Genre.ROCK,
         tracks: [{ title: 'Track 1', duration: 180, audioUrl: 'http://example.com/audio.mp3' }],
       });
       expect(result).toEqual(mockRelease);
@@ -77,7 +79,32 @@ describe('ReleasesService', () => {
         expect.objectContaining({
           title: 'Test Release',
           type: ReleaseType.SINGLE,
+          genre: Genre.ROCK,
           artistIds: ['artist-uuid'],
+        }),
+      );
+    });
+
+    it('should propagate the release genre onto every created track', async () => {
+      mockReleaseRepository.create.mockResolvedValue(mockRelease);
+
+      await service.create('artist-uuid', {
+        title: 'Test Release',
+        type: ReleaseType.ALBUM,
+        releasedAt: now.toISOString(),
+        genre: Genre.JAZZ,
+        tracks: [
+          { title: 'Track 1', duration: 180, audioUrl: 'http://example.com/a1.mp3' },
+          { title: 'Track 2', duration: 200, audioUrl: 'http://example.com/a2.mp3' },
+        ],
+      });
+
+      expect(mockReleaseRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tracks: [
+            expect.objectContaining({ genres: [Genre.JAZZ] }),
+            expect.objectContaining({ genres: [Genre.JAZZ] }),
+          ],
         }),
       );
     });
@@ -106,6 +133,24 @@ describe('ReleasesService', () => {
         UserRole.ADMIN,
       );
       expect(result.title).toBe('Admin Updated');
+    });
+
+    it('should update the release genre without touching existing tracks', async () => {
+      mockReleaseRepository.findById.mockResolvedValue(mockRelease);
+      mockReleaseRepository.update.mockResolvedValue({ ...mockRelease, genre: Genre.METAL });
+
+      const result = await service.update(
+        'release-uuid',
+        { genre: Genre.METAL },
+        'artist-uuid',
+        UserRole.ARTIST,
+      );
+
+      expect(result.genre).toBe(Genre.METAL);
+      expect(mockReleaseRepository.update).toHaveBeenCalledWith(
+        'release-uuid',
+        expect.objectContaining({ genre: Genre.METAL }),
+      );
     });
 
     it('should throw ForbiddenException if not owner', async () => {

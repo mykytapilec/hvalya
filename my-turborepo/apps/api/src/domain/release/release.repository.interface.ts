@@ -1,4 +1,4 @@
-import { ReleaseType } from '@hvalya/types';
+import { ReleaseType, Genre } from '@hvalya/types';
 import { ReleaseEntity } from './release.entity';
 
 export interface ICreateReleaseData {
@@ -6,12 +6,14 @@ export interface ICreateReleaseData {
   type: ReleaseType;
   coverUrl?: string;
   releasedAt: Date;
+  genre: Genre;
   artistIds: string[];
   tracks: Array<{
     title: string;
     duration: number;
     audioUrl: string;
     artistId: string;
+    genres: string[];
   }>;
 }
 
@@ -20,6 +22,7 @@ export interface IUpdateReleaseData {
   type?: ReleaseType;
   coverUrl?: string;
   releasedAt?: Date;
+  genre?: Genre;
 }
 
 export interface IReleaseRepository {

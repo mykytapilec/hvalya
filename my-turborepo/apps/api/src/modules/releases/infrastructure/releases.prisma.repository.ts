@@ -7,7 +7,7 @@ import {
 } from '../../../domain/release/release.repository.interface';
 import { ReleaseEntity } from '../../../domain/release/release.entity';
 import { TrackEntity } from '../../../domain/track/track.entity';
-import { ReleaseType } from '@hvalya/types';
+import { ReleaseType, Genre } from '@hvalya/types';
 
 @Injectable()
 export class ReleasesPrismaRepository implements IReleaseRepository {
@@ -45,6 +45,7 @@ export class ReleasesPrismaRepository implements IReleaseRepository {
         type: data.type,
         coverUrl: data.coverUrl,
         releasedAt: data.releasedAt,
+        genre: data.genre,
         artists: {
           create: data.artistIds.map((artistId) => ({ artistId })),
         },
@@ -54,6 +55,7 @@ export class ReleasesPrismaRepository implements IReleaseRepository {
             duration: t.duration,
             audioUrl: t.audioUrl,
             artistId: t.artistId,
+            genres: t.genres,
           })),
         },
       },
@@ -70,6 +72,7 @@ export class ReleasesPrismaRepository implements IReleaseRepository {
         ...(data.type !== undefined && { type: data.type }),
         ...(data.coverUrl !== undefined && { coverUrl: data.coverUrl }),
         ...(data.releasedAt !== undefined && { releasedAt: data.releasedAt }),
+        ...(data.genre !== undefined && { genre: data.genre }),
       },
       include: { tracks: true, artists: { select: { artistId: true } } },
     });
@@ -95,6 +98,7 @@ export class ReleasesPrismaRepository implements IReleaseRepository {
     type: string;
     coverUrl: string | null;
     releasedAt: Date | null;
+    genre: string | null;
     createdAt: Date;
     updatedAt: Date;
     artists: { artistId: string }[];
@@ -105,6 +109,7 @@ export class ReleasesPrismaRepository implements IReleaseRepository {
       audioUrl: string;
       artistId: string;
       albumId: string | null;
+      genres: string[];
       createdAt: Date;
       updatedAt: Date;
     }[];
@@ -115,6 +120,7 @@ export class ReleasesPrismaRepository implements IReleaseRepository {
       raw.type as ReleaseType,
       raw.coverUrl,
       raw.releasedAt ?? new Date(),
+      (raw.genre as Genre) ?? null,
       raw.createdAt,
       raw.updatedAt,
       raw.artists.map((a) => a.artistId),
@@ -127,6 +133,7 @@ export class ReleasesPrismaRepository implements IReleaseRepository {
             t.audioUrl,
             t.artistId,
             t.albumId,
+            t.genres,
             t.createdAt,
             t.updatedAt,
           ),

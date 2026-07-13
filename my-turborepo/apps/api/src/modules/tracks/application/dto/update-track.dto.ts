@@ -1,4 +1,5 @@
-import { IsString, IsInt, IsUrl, IsOptional, IsUUID, Min } from 'class-validator';
+import { IsString, IsInt, IsUrl, IsOptional, IsUUID, IsEnum, Min } from 'class-validator';
+import { Genre } from '@hvalya/types';
 
 export class UpdateTrackDto {
   @IsOptional()
@@ -17,4 +18,8 @@ export class UpdateTrackDto {
   @IsOptional()
   @IsUUID()
   albumId?: string | null;
+
+  @IsOptional()
+  @IsEnum(Genre)
+  genre?: Genre;
 }

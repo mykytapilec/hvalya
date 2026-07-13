@@ -1,5 +1,5 @@
 import { IsString, IsEnum, IsDateString, IsOptional, IsUrl, MinLength } from 'class-validator';
-import { ReleaseType } from '@hvalya/types';
+import { ReleaseType, Genre } from '@hvalya/types';
 
 export class UpdateReleaseDto {
   @IsOptional()
@@ -14,6 +14,10 @@ export class UpdateReleaseDto {
   @IsOptional()
   @IsDateString()
   releasedAt?: string;
+
+  @IsOptional()
+  @IsEnum(Genre)
+  genre?: Genre;
 
   @IsOptional()
   @IsUrl({ require_tld: false })
