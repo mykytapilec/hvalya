@@ -43,12 +43,14 @@ export class ReleasesService {
       type: dto.type,
       coverUrl: dto.coverUrl,
       releasedAt: new Date(dto.releasedAt),
+      genre: dto.genre,
       artistIds: [artistId],
       tracks: dto.tracks.map((t) => ({
         title: t.title,
         duration: t.duration ?? 0,
         audioUrl: t.audioUrl,
         artistId,
+        genres: [dto.genre],
       })),
     });
   }
@@ -66,6 +68,7 @@ export class ReleasesService {
       type: dto.type,
       coverUrl: dto.coverUrl,
       releasedAt: dto.releasedAt ? new Date(dto.releasedAt) : undefined,
+      genre: dto.genre,
     });
   }
 

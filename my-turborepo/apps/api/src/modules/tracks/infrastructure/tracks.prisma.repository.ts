@@ -55,6 +55,7 @@ export class TracksPrismaRepository implements ITrackRepository {
       raw.audioUrl,
       raw.artistId,
       raw.albumId,
+      raw.genres,
       raw.createdAt,
       raw.updatedAt,
     );

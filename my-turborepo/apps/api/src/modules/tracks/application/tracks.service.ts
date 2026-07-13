@@ -3,6 +3,7 @@ import { UserRole } from '@hvalya/types';
 import {
   ITrackRepository,
   TRACK_REPOSITORY,
+  IUpdateTrackData,
 } from '../../../domain/track/track.repository.interface';
 import { TrackEntity } from '../../../domain/track/track.entity';
 import { CreateTrackDto } from './dto/create-track.dto';
@@ -47,7 +48,18 @@ export class TracksService {
   ): Promise<TrackEntity> {
     const track = await this.findById(id);
     this.assertOwnership(track, requesterArtistId, requesterRole);
-    return this.trackRepository.update(id, dto);
+
+    const updateData: IUpdateTrackData = {
+      title: dto.title,
+      duration: dto.duration,
+      audioUrl: dto.audioUrl,
+      albumId: dto.albumId,
+    };
+    if (dto.genre !== undefined) {
+      updateData.genres = [dto.genre];
+    }
+
+    return this.trackRepository.update(id, updateData);
   }
 
   async delete(id: string, requesterArtistId: string, requesterRole: UserRole): Promise<void> {

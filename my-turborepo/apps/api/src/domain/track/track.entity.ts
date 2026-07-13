@@ -6,6 +6,7 @@ export class TrackEntity {
     public readonly audioUrl: string,
     public readonly artistId: string,
     public readonly albumId: string | null,
+    public readonly genres: string[],
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
   ) {}

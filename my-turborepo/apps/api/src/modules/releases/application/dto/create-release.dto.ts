@@ -1,6 +1,6 @@
 import { IsString, IsEnum, IsDateString, IsArray, ValidateNested, IsInt, IsOptional, IsUrl, MinLength, Min, ArrayMinSize } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ReleaseType } from '@hvalya/types';
+import { ReleaseType, Genre } from '@hvalya/types';
 
 export class CreateTrackInReleaseDto {
   @IsString()
@@ -27,6 +27,9 @@ export class CreateReleaseDto {
 
   @IsDateString()
   releasedAt!: string;
+
+  @IsEnum(Genre)
+  genre!: Genre;
 
   @IsOptional()
   @IsUrl()
