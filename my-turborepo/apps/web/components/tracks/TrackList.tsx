@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePlayerStore } from '../../app/store/player.store';
@@ -7,13 +6,11 @@ import { useAuthStore } from '../../app/store/auth.store';
 import { api, type Track } from '../../app/lib/api';
 import EditTrackModal from './EditTrackModal';
 import ConfirmDeleteModal from '../ui/ConfirmDeleteModal';
-
 interface TrackListProps {
   tracks: Track[];
   myArtistId?: string | null;
   onTracksChange?: (tracks: Track[]) => void;
 }
-
 export default function TrackList({ tracks, myArtistId, onTracksChange }: TrackListProps) {
   const router = useRouter();
   const play = usePlayerStore((s) => s.play);
@@ -21,22 +18,18 @@ export default function TrackList({ tracks, myArtistId, onTracksChange }: TrackL
   const token = useAuthStore((s) => s.token);
   const [editingTrack, setEditingTrack] = useState<Track | null>(null);
   const [deletingTrack, setDeletingTrack] = useState<Track | null>(null);
-
   if (tracks.length === 0) {
     return <p>No tracks yet.</p>;
   }
-
   function canManage(track: Track): boolean {
     if (role === 'ADMIN') return true;
     if (role === 'ARTIST' && myArtistId) return track.artistId === myArtistId;
     return false;
   }
-
   function handleSaved(updated: Track) {
     setEditingTrack(null);
     onTracksChange?.(tracks.map((t) => (t.id === updated.id ? updated : t)));
   }
-
   async function handleConfirmDelete() {
     if (!deletingTrack) return;
     if (!token) {
@@ -46,7 +39,6 @@ export default function TrackList({ tracks, myArtistId, onTracksChange }: TrackL
     onTracksChange?.(tracks.filter((t) => t.id !== deletingTrack.id));
     setDeletingTrack(null);
   }
-
   async function handlePlay(track: Track) {
     if (!token) {
       router.push('/login');
@@ -54,7 +46,6 @@ export default function TrackList({ tracks, myArtistId, onTracksChange }: TrackL
     }
     await play(track, token);
   }
-
   return (
     <>
       <ul style={{ listStyle: 'none', padding: 0 }}>
@@ -74,6 +65,11 @@ export default function TrackList({ tracks, myArtistId, onTracksChange }: TrackL
               <span style={{ marginLeft: 8, color: '#888' }}>
                 {Math.floor(track.duration / 60)}:{String(track.duration % 60).padStart(2, '0')}
               </span>
+              {track.genres.length > 0 && (
+                <span style={{ marginLeft: 8, color: 'var(--color-muted)', fontSize: 12 }}>
+                  {track.genres.join(', ')}
+                </span>
+              )}
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <button onClick={() => handlePlay(track)}>▶ Play</button>
@@ -89,7 +85,6 @@ export default function TrackList({ tracks, myArtistId, onTracksChange }: TrackL
           </li>
         ))}
       </ul>
-
       {editingTrack && (
         <EditTrackModal
           track={editingTrack}
@@ -97,7 +92,6 @@ export default function TrackList({ tracks, myArtistId, onTracksChange }: TrackL
           onSaved={handleSaved}
         />
       )}
-
       {deletingTrack && (
         <ConfirmDeleteModal
           title="Delete Track"
