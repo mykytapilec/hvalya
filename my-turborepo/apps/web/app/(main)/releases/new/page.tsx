@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api, type ReleaseType } from '../../../lib/api';
+import { api, type ReleaseType, type Genre } from '../../../lib/api';
 import { useAuthStore } from '../../../store/auth.store';
 
 const RELEASE_TYPES: ReleaseType[] = ['SINGLE', 'EP', 'ALBUM', 'SPLIT', 'OTHER'];
+const GENRES: Genre[] = [
+  'ROCK', 'POP', 'JAZZ', 'HIP_HOP', 'ELECTRONIC', 'CLASSICAL',
+  'METAL', 'BLUES', 'RNB', 'FOLK', 'INDIE', 'PUNK', 'REGGAE', 'COUNTRY', 'OTHER',
+];
 
 interface TrackForm {
   title: string;
@@ -40,6 +44,7 @@ export default function NewReleasePage() {
 
   const [title, setTitle] = useState('');
   const [type, setType] = useState<ReleaseType>('SINGLE');
+  const [genre, setGenre] = useState<Genre>('ROCK');
   const [releasedAt, setReleasedAt] = useState('');
   const [coverMode, setCoverMode] = useState<'url' | 'file'>('url');
   const [coverUrl, setCoverUrl] = useState('');
@@ -93,6 +98,7 @@ export default function NewReleasePage() {
         title,
         type,
         releasedAt: new Date(releasedAt).toISOString(),
+        genre,
         coverUrl: coverMode === 'url' && coverUrl.trim() ? coverUrl.trim() : undefined,
         tracks: resolvedTracks,
       });
@@ -126,6 +132,20 @@ export default function NewReleasePage() {
           <option key={t} value={t}>{t}</option>
         ))}
       </select>
+
+      <label>Genre</label>
+      <select
+        value={genre}
+        onChange={(e) => setGenre(e.target.value as Genre)}
+        style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--color-border)', borderRadius: 6, fontSize: 14, background: 'var(--modal-bg)', color: 'var(--modal-text)' }}
+      >
+        {GENRES.map((g) => (
+          <option key={g} value={g}>{g}</option>
+        ))}
+      </select>
+      <p style={{ fontSize: 12, color: 'var(--color-muted)', marginTop: 4 }}>
+        Applied to every track in this release. You can override individual tracks later.
+      </p>
 
       <label>Release Date</label>
       <input

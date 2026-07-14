@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { api, type Release } from '../../../lib/api';
 import { useAuthStore } from '../../../store/auth.store';
-import { usePlayerStore } from '../../../store/player.store';
+import TrackList from '../../../../components/tracks/TrackList';
 
 const RELEASE_TYPE_LABELS: Record<string, string> = {
   SINGLE: 'Single', EP: 'EP', ALBUM: 'Album', SPLIT: 'Split', OTHER: 'Other',
@@ -12,26 +13,38 @@ const RELEASE_TYPE_LABELS: Record<string, string> = {
 
 export default function ReleaseDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const token = useAuthStore((s) => s.token);
-  const play = usePlayerStore((s) => s.play);
+  const role = useAuthStore((s) => s.role);
+  const userId = useAuthStore((s) => s.userId);
   const [release, setRelease] = useState<Release | null>(null);
+  const [myArtistId, setMyArtistId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    api.releases
-      .findById(id)
-      .then(setRelease)
+    Promise.all([
+      api.releases.findById(id),
+      role === 'ARTIST' ? api.artists.findAll() : Promise.resolve([]),
+    ])
+      .then(([r, artistsResult]) => {
+        setRelease(r);
+        if (role === 'ARTIST' && userId) {
+          const mine = artistsResult.find((a) => a.userId === userId);
+          setMyArtistId(mine?.id ?? null);
+        }
+      })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load release'))
       .finally(() => setIsLoading(false));
-  }, [id]);
+  }, [id, role, userId]);
 
-  async function handlePlay(trackId: string, title: string, artistId: string) {
-    if (!token) {
-      window.location.href = '/login';
-      return;
-    }
-    await play({ id: trackId, title, artistId }, token);
+  function canManageRelease(): boolean {
+    if (!release) return false;
+    if (role === 'ADMIN') return true;
+    if (role === 'ARTIST' && myArtistId) return release.artistIds.includes(myArtistId);
+    return false;
+  }
+
+  function handleTracksChange(updatedTracks: Release['tracks']) {
+    setRelease((prev) => (prev ? { ...prev, tracks: updatedTracks } : prev));
   }
 
   if (isLoading) return <p>Loading...</p>;
@@ -53,10 +66,18 @@ export default function ReleaseDetailPage() {
             🎵
           </div>
         )}
-        <div>
-          <h1 style={{ marginBottom: 6 }}>{release.title}</h1>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <h1 style={{ marginBottom: 6 }}>{release.title}</h1>
+            {canManageRelease() && (
+              <Link href={`/releases/${id}/edit`}>
+                <button>Edit Release</button>
+              </Link>
+            )}
+          </div>
           <p style={{ color: 'var(--color-muted)', fontSize: 14 }}>
-            {RELEASE_TYPE_LABELS[release.type]} · {new Date(release.releasedAt).toLocaleDateString()}
+            {RELEASE_TYPE_LABELS[release.type]}
+            {release.genre ? ` · ${release.genre}` : ''} · {new Date(release.releasedAt).toLocaleDateString()}
           </p>
           <p style={{ color: 'var(--color-muted)', fontSize: 14, marginTop: 4 }}>
             {release.tracks.length} track{release.tracks.length !== 1 ? 's' : ''}
@@ -64,23 +85,11 @@ export default function ReleaseDetailPage() {
         </div>
       </div>
 
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {release.tracks.map((track, index) => (
-          <li
-            key={track.id}
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--color-border)' }}
-          >
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-              <span style={{ color: 'var(--color-muted)', width: 20, textAlign: 'right', fontSize: 13 }}>{index + 1}</span>
-              <span style={{ fontWeight: 500 }}>{track.title}</span>
-              <span style={{ color: 'var(--color-muted)', fontSize: 13 }}>
-                {Math.floor(track.duration / 60)}:{String(track.duration % 60).padStart(2, '0')}
-              </span>
-            </div>
-            <button onClick={() => handlePlay(track.id, track.title, track.artistId)}>▶ Play</button>
-          </li>
-        ))}
-      </ul>
+      <TrackList
+        tracks={release.tracks}
+        myArtistId={myArtistId}
+        onTracksChange={handleTracksChange}
+      />
     </div>
   );
 }

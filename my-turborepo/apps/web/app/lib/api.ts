@@ -6,6 +6,7 @@ export interface Track {
   duration: number;
   artistId: string;
   albumId: string | null;
+  genres: string[];
 }
 
 export interface TrackPlayback {
@@ -26,12 +27,30 @@ export type ArtistApplicationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export type ReleaseType = 'SINGLE' | 'EP' | 'ALBUM' | 'SPLIT' | 'OTHER';
 
+export type Genre =
+  | 'ROCK'
+  | 'POP'
+  | 'JAZZ'
+  | 'HIP_HOP'
+  | 'ELECTRONIC'
+  | 'CLASSICAL'
+  | 'METAL'
+  | 'BLUES'
+  | 'RNB'
+  | 'FOLK'
+  | 'INDIE'
+  | 'PUNK'
+  | 'REGGAE'
+  | 'COUNTRY'
+  | 'OTHER';
+
 export interface ReleaseTrack {
   id: string;
   title: string;
   duration: number;
   artistId: string;
   albumId: string | null;
+  genres: string[];
 }
 
 export interface Release {
@@ -40,6 +59,7 @@ export interface Release {
   type: ReleaseType;
   coverUrl: string | null;
   releasedAt: string;
+  genre: Genre | null;
   createdAt: string;
   updatedAt: string;
   artistIds: string[];
@@ -129,7 +149,7 @@ export const api = {
     update: (
       token: string,
       id: string,
-      data: Partial<Pick<Track, 'title'>> & { audioUrl?: string },
+      data: Partial<Pick<Track, 'title'>> & { audioUrl?: string; genre?: Genre },
     ) =>
       request<Track>(
         `/tracks/${id}`,
@@ -164,6 +184,7 @@ export const api = {
         title: string;
         type: ReleaseType;
         releasedAt: string;
+        genre: Genre;
         coverUrl?: string;
         tracks: Array<{ title: string; duration: number; audioUrl: string }>;
       },
@@ -175,7 +196,7 @@ export const api = {
     update: (
       token: string,
       id: string,
-      data: { title?: string; type?: ReleaseType; releasedAt?: string; coverUrl?: string },
+      data: { title?: string; type?: ReleaseType; releasedAt?: string; genre?: Genre; coverUrl?: string },
     ) =>
       request<Release>(`/releases/${id}`, {
         method: 'PATCH',

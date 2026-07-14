@@ -12,7 +12,7 @@ export class UpdateTrackDto {
   duration?: number;
 
   @IsOptional()
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   audioUrl?: string;
 
   @IsOptional()
