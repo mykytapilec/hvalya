@@ -60,7 +60,8 @@ export default function ReleasesScreen() {
             <View style={styles.info}>
               <Text style={styles.title}>{item.title}</Text>
               <Text style={styles.meta}>
-                {RELEASE_TYPE_LABELS[item.type]} · {item.tracks.length} track
+                {RELEASE_TYPE_LABELS[item.type]}
+                {item.genre ? ` · ${item.genre}` : ''} · {item.tracks.length} track
                 {item.tracks.length !== 1 ? 's' : ''} ·{' '}
                 {new Date(item.releasedAt).toLocaleDateString()}
               </Text>
