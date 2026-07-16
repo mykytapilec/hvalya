@@ -16,10 +16,13 @@ interface PlayerState {
   isPlaying: boolean;
   isLoading: boolean;
   error: string;
+  isExpanded: boolean;
   play: (track: PlayableTrack, token: string) => Promise<void>;
   pause: () => void;
   resume: () => void;
   stop: () => void;
+  expand: () => void;
+  collapse: () => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set) => ({
@@ -27,6 +30,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   isPlaying: false,
   isLoading: false,
   error: '',
+  isExpanded: false,
 
   play: async (track, token) => {
     set({ isLoading: true, error: '' });
@@ -43,5 +47,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
 
   pause: () => set({ isPlaying: false }),
   resume: () => set({ isPlaying: true }),
-  stop: () => set({ currentTrack: null, isPlaying: false, error: '' }),
+  stop: () => set({ currentTrack: null, isPlaying: false, error: '', isExpanded: false }),
+  expand: () => set({ isExpanded: true }),
+  collapse: () => set({ isExpanded: false }),
 }));

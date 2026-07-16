@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useAuthStore } from '../store/auth';
+import { Player } from '../components/Player';
 
 export default function RootLayout() {
   const init = useAuthStore((s) => s.init);
@@ -25,11 +26,14 @@ export default function RootLayout() {
   }, [token, isLoading, segments]);
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)/login/index" />
-      <Stack.Screen name="(auth)/register/index" />
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="releases/[id]" options={{ headerShown: true, title: 'Release' }} />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)/login/index" />
+        <Stack.Screen name="(auth)/register/index" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="releases/[id]" options={{ headerShown: true, title: 'Release' }} />
+      </Stack>
+      <Player />
+    </>
   );
 }

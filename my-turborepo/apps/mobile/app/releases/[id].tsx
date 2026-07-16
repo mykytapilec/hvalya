@@ -13,7 +13,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { api, type Release } from '../../lib/api';
 import { useAuthStore } from '../../store/auth';
 import { usePlayerStore } from '../../store/player';
-import { Player } from '../../components/Player';
 
 export default function ReleaseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -103,7 +102,6 @@ export default function ReleaseDetailScreen() {
           </Pressable>
         )}
       />
-      <Player />
     </View>
   );
 }
