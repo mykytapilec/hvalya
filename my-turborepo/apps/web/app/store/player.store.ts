@@ -18,9 +18,18 @@ interface PlayerState {
   isPlaying: boolean;
   isLoading: boolean;
   error: string;
+  isExpanded: boolean;
+  position: number;
+  duration: number;
   play: (track: PlayableTrack, token: string) => Promise<void>;
   pause: () => void;
   resume: () => void;
+  stop: () => void;
+  expand: () => void;
+  collapse: () => void;
+  setPosition: (seconds: number) => void;
+  setDuration: (seconds: number) => void;
+  seekTo: (seconds: number) => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set) => ({
@@ -28,12 +37,21 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   isPlaying: false,
   isLoading: false,
   error: '',
+  isExpanded: false,
+  position: 0,
+  duration: 0,
 
   play: async (track, token) => {
     set({ isLoading: true, error: '' });
     try {
       const { audioUrl } = await api.tracks.play(token, track.id);
-      set({ currentTrack: { ...track, audioUrl }, isPlaying: true, isLoading: false });
+      set({
+        currentTrack: { ...track, audioUrl },
+        isPlaying: true,
+        isLoading: false,
+        position: 0,
+        duration: 0,
+      });
     } catch (err) {
       set({
         error: err instanceof Error ? err.message : 'Failed to play track',
@@ -44,4 +62,19 @@ export const usePlayerStore = create<PlayerState>((set) => ({
 
   pause: () => set({ isPlaying: false }),
   resume: () => set({ isPlaying: true }),
+  stop: () =>
+    set({
+      currentTrack: null,
+      isPlaying: false,
+      error: '',
+      isExpanded: false,
+      position: 0,
+      duration: 0,
+    }),
+  expand: () => set({ isExpanded: true }),
+  collapse: () => set({ isExpanded: false }),
+  setPosition: (seconds) => set({ position: seconds }),
+  setDuration: (seconds) => set({ duration: seconds }),
+  // Overwritten by the Player component once the <audio> element exists.
+  seekTo: () => {},
 }));

@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { api, type Track } from '../../lib/api';
 import { useAuthStore } from '../../store/auth';
 import { usePlayerStore } from '../../store/player';
-import { Player } from '../../components/Player';
 
 export default function TracksScreen() {
   const router = useRouter();
@@ -63,7 +62,6 @@ export default function TracksScreen() {
           </Pressable>
         )}
       />
-      <Player />
     </View>
   );
 }
