@@ -73,7 +73,9 @@ export default function ReleaseDetailScreen() {
         <View style={styles.headerInfo}>
           <Text style={styles.title}>{release.title}</Text>
           <Text style={styles.meta}>
-            {release.type} · {new Date(release.releasedAt).toLocaleDateString()}
+            {release.type}
+            {release.genre ? ` · ${release.genre}` : ''} ·{' '}
+            {new Date(release.releasedAt).toLocaleDateString()}
           </Text>
           <Text style={styles.meta}>
             {release.tracks.length} track{release.tracks.length !== 1 ? 's' : ''}
@@ -92,6 +94,7 @@ export default function ReleaseDetailScreen() {
               <Text style={styles.trackTitle}>{item.title}</Text>
               <Text style={styles.duration}>
                 {Math.floor(item.duration / 60)}:{String(item.duration % 60).padStart(2, '0')}
+                {item.genres.length > 0 ? ` · ${item.genres.join(', ')}` : ''}
               </Text>
             </View>
             <Text style={styles.playIcon}>
