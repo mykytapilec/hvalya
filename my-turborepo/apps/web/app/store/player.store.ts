@@ -7,6 +7,7 @@ interface PlayableTrack {
   id: string;
   title: string;
   artistId: string;
+  coverUrl?: string | null;
 }
 
 interface CurrentTrack extends PlayableTrack {
