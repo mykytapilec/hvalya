@@ -22,6 +22,24 @@ enum ReleaseType {
   OTHER
 }
 
+enum Genre {
+  ROCK
+  POP
+  JAZZ
+  HIP_HOP
+  ELECTRONIC
+  CLASSICAL
+  METAL
+  BLUES
+  RNB
+  FOLK
+  INDIE
+  PUNK
+  REGGAE
+  COUNTRY
+  OTHER
+}
+
 enum SubscriptionTier {
   FREE
   STANDARD
@@ -131,6 +149,7 @@ model Album {
   title      String
   coverUrl   String?   @map("cover_url")
   releasedAt DateTime? @map("released_at")
+  genre      Genre?    @map("genre")
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
 

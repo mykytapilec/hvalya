@@ -6,6 +6,7 @@ export interface ICreateTrackData {
   audioUrl: string;
   artistId: string;
   albumId?: string;
+  genres?: string[];
 }
 
 export interface IUpdateTrackData {
@@ -13,6 +14,7 @@ export interface IUpdateTrackData {
   duration?: number;
   audioUrl?: string;
   albumId?: string | null;
+  genres?: string[];
 }
 
 export interface ITrackRepository {

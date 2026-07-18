@@ -3,7 +3,7 @@ import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { TracksService } from './tracks.service';
 import { TRACK_REPOSITORY } from '../../../domain/track/track.repository.interface';
 import { TrackEntity } from '../../../domain/track/track.entity';
-import { UserRole } from '@hvalya/types';
+import { UserRole, Genre } from '@hvalya/types';
 
 const mockTrackRepository = {
   findAll: jest.fn(),
@@ -22,6 +22,7 @@ const mockTrack = new TrackEntity(
   'http://example.com/audio.mp3',
   'artist-uuid',
   null,
+  [],
   new Date(),
   new Date(),
 );
@@ -122,6 +123,38 @@ describe('TracksService', () => {
       await expect(
         service.update('non-existent', { title: 'x' }, 'artist-uuid', UserRole.ARTIST),
       ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should map genre to a single-element genres array when provided', async () => {
+      mockTrackRepository.findById.mockResolvedValue(mockTrack);
+      mockTrackRepository.update.mockResolvedValue({ ...mockTrack, genres: [Genre.JAZZ] });
+
+      await service.update(
+        'track-uuid',
+        { genre: Genre.JAZZ },
+        'artist-uuid',
+        UserRole.ARTIST,
+      );
+
+      expect(mockTrackRepository.update).toHaveBeenCalledWith(
+        'track-uuid',
+        expect.objectContaining({ genres: [Genre.JAZZ] }),
+      );
+    });
+
+    it('should not touch genres when genre is not provided', async () => {
+      mockTrackRepository.findById.mockResolvedValue(mockTrack);
+      mockTrackRepository.update.mockResolvedValue(mockTrack);
+
+      await service.update(
+        'track-uuid',
+        { title: 'No genre change' },
+        'artist-uuid',
+        UserRole.ARTIST,
+      );
+
+      const callArg = mockTrackRepository.update.mock.calls[0][1];
+      expect(callArg).not.toHaveProperty('genres');
     });
   });
 

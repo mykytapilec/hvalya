@@ -32,6 +32,7 @@ const mockTrack = new TrackEntity(
   'https://example.com/audio.mp3',
   'artist-uuid',
   null,
+  [],
   new Date(),
   new Date(),
 );

@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { api, type Release, type ReleaseType } from '../../../../lib/api';
+import { api, type Release, type ReleaseType, type Genre } from '../../../../lib/api';
 import { useAuthStore } from '../../../../store/auth.store';
 
 const RELEASE_TYPES: ReleaseType[] = ['SINGLE', 'EP', 'ALBUM', 'SPLIT', 'OTHER'];
+const GENRES: Genre[] = [
+  'ROCK', 'POP', 'JAZZ', 'HIP_HOP', 'ELECTRONIC', 'CLASSICAL',
+  'METAL', 'BLUES', 'RNB', 'FOLK', 'INDIE', 'PUNK', 'REGGAE', 'COUNTRY', 'OTHER',
+];
 
 export default function EditReleasePage() {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +22,7 @@ export default function EditReleasePage() {
   const [release, setRelease] = useState<Release | null>(null);
   const [title, setTitle] = useState('');
   const [type, setType] = useState<ReleaseType>('SINGLE');
+  const [genre, setGenre] = useState<Genre>('OTHER');
   const [releasedAt, setReleasedAt] = useState('');
   const [coverMode, setCoverMode] = useState<'url' | 'file'>('url');
   const [coverUrl, setCoverUrl] = useState('');
@@ -40,6 +45,7 @@ export default function EditReleasePage() {
       setRelease(r);
       setTitle(r.title);
       setType(r.type);
+      setGenre(r.genre ?? 'OTHER');
       setReleasedAt(r.releasedAt.slice(0, 10));
       setCoverUrl(r.coverUrl ?? '');
 
@@ -63,6 +69,7 @@ export default function EditReleasePage() {
       await api.releases.update(token, id, {
         title,
         type,
+        genre,
         releasedAt: new Date(releasedAt).toISOString(),
         coverUrl: coverMode === 'url' && coverUrl.trim() ? coverUrl.trim() : undefined,
       });
@@ -99,6 +106,20 @@ export default function EditReleasePage() {
           <option key={t} value={t}>{t}</option>
         ))}
       </select>
+
+      <label>Genre</label>
+      <select
+        value={genre}
+        onChange={(e) => setGenre(e.target.value as Genre)}
+        style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--color-border)', borderRadius: 6, fontSize: 14, background: 'var(--modal-bg)', color: 'var(--modal-text)' }}
+      >
+        {GENRES.map((g) => (
+          <option key={g} value={g}>{g}</option>
+        ))}
+      </select>
+      <p style={{ fontSize: 12, color: 'var(--color-muted)', marginTop: 4 }}>
+        Changing this only affects the release. Existing tracks keep their own genre.
+      </p>
 
       <label>Release Date</label>
       <input

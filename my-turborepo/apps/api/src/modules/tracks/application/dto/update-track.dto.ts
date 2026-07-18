@@ -1,4 +1,5 @@
-import { IsString, IsInt, IsUrl, IsOptional, IsUUID, Min } from 'class-validator';
+import { IsString, IsInt, IsUrl, IsOptional, IsUUID, IsEnum, Min } from 'class-validator';
+import { Genre } from '@hvalya/types';
 
 export class UpdateTrackDto {
   @IsOptional()
@@ -11,10 +12,14 @@ export class UpdateTrackDto {
   duration?: number;
 
   @IsOptional()
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   audioUrl?: string;
 
   @IsOptional()
   @IsUUID()
   albumId?: string | null;
+
+  @IsOptional()
+  @IsEnum(Genre)
+  genre?: Genre;
 }

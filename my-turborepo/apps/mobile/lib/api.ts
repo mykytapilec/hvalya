@@ -1,54 +1,64 @@
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
-
 interface RegisterPayload {
   email: string;
   username: string;
   password: string;
 }
-
 interface LoginPayload {
   email: string;
   password: string;
 }
-
 interface AuthResponse {
   accessToken: string;
 }
-
 export interface Track {
   id: string;
   title: string;
   duration: number;
   artistId: string;
   albumId: string | null;
+  genres: string[];
 }
-
 export interface TrackPlayback {
   audioUrl: string;
 }
-
 export interface ReleaseTrack {
   id: string;
   title: string;
   duration: number;
   artistId: string;
   albumId: string | null;
+  genres: string[];
 }
-
 export type ReleaseType = 'SINGLE' | 'EP' | 'ALBUM' | 'SPLIT' | 'OTHER';
-
+export type Genre =
+  | 'ROCK'
+  | 'POP'
+  | 'JAZZ'
+  | 'HIP_HOP'
+  | 'ELECTRONIC'
+  | 'CLASSICAL'
+  | 'METAL'
+  | 'BLUES'
+  | 'RNB'
+  | 'FOLK'
+  | 'INDIE'
+  | 'PUNK'
+  | 'REGGAE'
+  | 'COUNTRY'
+  | 'OTHER';
 export interface Release {
   id: string;
   title: string;
   type: ReleaseType;
   coverUrl: string | null;
   releasedAt: string;
+  genre: Genre | null;
   createdAt: string;
   updatedAt: string;
   artistIds: string[];
   tracks: ReleaseTrack[];
 }
-
 export interface Artist {
   id: string;
   name: string;
@@ -58,7 +68,6 @@ export interface Artist {
   createdAt: string;
   updatedAt: string;
 }
-
 export interface Subscription {
   id: string;
   userId: string;
@@ -68,7 +77,6 @@ export interface Subscription {
   trialEndsAt: string | null;
   expiresAt: string | null;
 }
-
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -79,9 +87,7 @@ async function request<T>(
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
-
   const res = await fetch(`${API_URL}${path}`, { ...options, headers });
-
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
     const rawMessage = error?.message?.message ?? error?.message ?? 'Request failed';
@@ -93,14 +99,11 @@ async function request<T>(
           : 'Request failed';
     throw new Error(message);
   }
-
   if (res.status === 204) {
     return undefined as T;
   }
-
   return res.json();
 }
-
 export const api = {
   auth: {
     register: (data: RegisterPayload) =>
@@ -125,7 +128,7 @@ export const api = {
   },
   artists: {
     findMe: (token: string) => request<Artist>('/artists/me', {}, token),
-    update: (token: string, id: string, data: Partial<Pick<Artist, 'name' | 'bio' | 'socialLinks'>>) =>
+    update: (token: string, id: string, data: Partial<Pick<Artist, 'name' | 'bio' | 'socialLinks'>>)=>
       request<Artist>(`/artists/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, token),
   },
   subscriptions: {
