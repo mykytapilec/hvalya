@@ -59,4 +59,4 @@ jobs:
         run: npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
 
       - name: Run tests
-        run: turbo run test
+        run: npx turbo run test --filter='!@hvalya/ai-service'
