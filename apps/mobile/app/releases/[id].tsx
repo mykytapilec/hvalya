@@ -40,7 +40,7 @@ export default function ReleaseDetailScreen() {
       ]);
       return;
     }
-    await play(track, token);
+    await play({ ...track, coverUrl: release?.coverUrl }, token);
   }
 
   if (isLoading) {

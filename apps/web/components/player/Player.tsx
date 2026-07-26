@@ -115,7 +115,12 @@ export default function Player() {
               <span style={{ fontSize: 14 }}>Loading...</span>
             ) : (
               <>
-                <div style={miniCoverStyle} />
+                {currentTrack?.coverUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={currentTrack.coverUrl} alt="" style={miniCoverImgStyle} />
+                ) : (
+                  <div style={miniCoverPlaceholderStyle} />
+                )}
                 <strong style={{ flex: 1, fontSize: 14, fontWeight: 500 }}>{currentTrack?.title}</strong>
                 <button
                   onClick={(e) => {
@@ -163,7 +168,12 @@ export default function Player() {
               maxWidth: 420,
             }}
           >
-            <div style={fullCoverStyle} />
+            {currentTrack.coverUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={currentTrack.coverUrl} alt="" style={fullCoverImgStyle} />
+            ) : (
+              <div style={fullCoverPlaceholderStyle} />
+            )}
             <h2 style={{ marginTop: 32, fontSize: 24, textAlign: 'center' }}>{currentTrack.title}</h2>
 
             <div style={{ width: '100%', marginTop: 40 }}>
@@ -200,7 +210,7 @@ export default function Player() {
   );
 }
 
-const miniCoverStyle: CSSProperties = {
+const miniCoverPlaceholderStyle: CSSProperties = {
   width: 36,
   height: 36,
   borderRadius: 6,
@@ -208,11 +218,27 @@ const miniCoverStyle: CSSProperties = {
   flexShrink: 0,
 };
 
-const fullCoverStyle: CSSProperties = {
+const miniCoverImgStyle: CSSProperties = {
+  width: 36,
+  height: 36,
+  borderRadius: 6,
+  objectFit: 'cover',
+  flexShrink: 0,
+};
+
+const fullCoverPlaceholderStyle: CSSProperties = {
   width: 240,
   height: 240,
   borderRadius: 16,
   background: 'linear-gradient(135deg, var(--brand-blue-light), var(--brand-yellow))',
+  boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+};
+
+const fullCoverImgStyle: CSSProperties = {
+  width: 240,
+  height: 240,
+  borderRadius: 16,
+  objectFit: 'cover',
   boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
 };
 
