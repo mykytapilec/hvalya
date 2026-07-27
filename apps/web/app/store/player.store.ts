@@ -7,6 +7,7 @@ interface PlayableTrack {
   id: string;
   title: string;
   artistId: string;
+  coverUrl?: string | null;
 }
 
 interface CurrentTrack extends PlayableTrack {
@@ -75,6 +76,5 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   collapse: () => set({ isExpanded: false }),
   setPosition: (seconds) => set({ position: seconds }),
   setDuration: (seconds) => set({ duration: seconds }),
-  // Overwritten by the Player component once the <audio> element exists.
   seekTo: () => {},
 }));

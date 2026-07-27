@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ActivityIndicator, Modal, Image } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { usePlayerStore } from '../store/player';
@@ -61,7 +61,11 @@ export function Player() {
               </>
             ) : (
               <>
-                <View style={styles.miniCover} />
+                {currentTrack?.coverUrl ? (
+                  <Image source={{ uri: currentTrack.coverUrl }} style={styles.miniCoverImg} />
+                ) : (
+                  <View style={styles.miniCover} />
+                )}
                 <Text style={styles.title} numberOfLines={1}>
                   {currentTrack?.title}
                 </Text>
@@ -88,7 +92,11 @@ export function Player() {
             </Pressable>
 
             <View style={styles.fullContent}>
-              <View style={styles.fullCover} />
+              {currentTrack.coverUrl ? (
+                <Image source={{ uri: currentTrack.coverUrl }} style={styles.fullCoverImg} />
+              ) : (
+                <View style={styles.fullCover} />
+              )}
               <Text style={styles.fullTitle}>{currentTrack.title}</Text>
 
               <View style={styles.sliderContainer}>
@@ -148,6 +156,11 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#3b82f6',
   },
+  miniCoverImg: {
+    width: 36,
+    height: 36,
+    borderRadius: 6,
+  },
   title: { color: '#fff', fontSize: 14, flex: 1, fontWeight: '500' },
   error: { color: '#fca5a5', fontSize: 13, flex: 1 },
   icon: { color: '#fff', fontSize: 20 },
@@ -168,6 +181,11 @@ const styles = StyleSheet.create({
     height: 240,
     borderRadius: 16,
     backgroundColor: '#3b82f6',
+  },
+  fullCoverImg: {
+    width: 240,
+    height: 240,
+    borderRadius: 16,
   },
   fullTitle: { color: '#fff', fontSize: 22, fontWeight: '700', marginTop: 32, textAlign: 'center' },
   sliderContainer: { width: '100%', marginTop: 40 },
