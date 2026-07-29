@@ -7,28 +7,55 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
-import { api, type Artist } from '../../lib/api';
+import { api, type Artist, type Subscription } from '../../lib/api';
 import { useAuthStore } from '../../store/auth';
+import { decodeToken } from '../../lib/jwt';
 
 export default function ProfileScreen() {
   const token = useAuthStore((s) => s.token);
   const logout = useAuthStore((s) => s.logout);
 
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState('');
+
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(true);
+
   const [artist, setArtist] = useState<Artist | null>(null);
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [socialLinks, setSocialLinks] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingArtist, setIsLoadingArtist] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
+    if (!token) return;
+    const decoded = decodeToken(token);
+    if (decoded) {
+      setEmail(decoded.email);
+      setRole(decoded.role);
+    }
+  }, [token]);
+
+  useEffect(() => {
     if (!token) {
-      setIsLoading(false);
+      setIsLoadingSubscription(false);
+      return;
+    }
+    api.subscriptions
+      .getMine(token)
+      .then(setSubscription)
+      .catch(() => setSubscription(null))
+      .finally(() => setIsLoadingSubscription(false));
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) {
+      setIsLoadingArtist(false);
       return;
     }
     api.artists
@@ -40,12 +67,12 @@ export default function ProfileScreen() {
         setSocialLinks(a.socialLinks ?? '');
       })
       .catch(() => {
-        // Not an artist — profile form stays hidden
+        // Not an artist — form stays hidden
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => setIsLoadingArtist(false));
   }, [token]);
 
-  async function handleSave() {
+  async function handleSaveArtist() {
     if (!token || !artist) return;
     setError('');
     setSuccess(false);
@@ -66,7 +93,14 @@ export default function ProfileScreen() {
     router.replace('/(auth)/login');
   }
 
-  if (isLoading) {
+  const trialDaysLeft = subscription?.trialEndsAt
+    ? Math.max(
+        0,
+        Math.ceil((new Date(subscription.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+      )
+    : null;
+
+  if (isLoadingSubscription || isLoadingArtist) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator />
@@ -78,46 +112,90 @@ export default function ProfileScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.header}>Profile</Text>
 
+      <View style={styles.card}>
+        <Text style={styles.email}>{email}</Text>
+        <View style={styles.roleBadge}>
+          <Text style={styles.roleBadgeText}>{role}</Text>
+        </View>
+      </View>
+
+      <Text style={styles.sectionTitle}>Subscription</Text>
+      {subscription ? (
+        <Pressable
+          style={styles.card}
+          onPress={() => router.push('/(tabs)/subscription')}
+        >
+          <View style={styles.subscriptionRow}>
+            <View>
+              <Text style={styles.tier}>{subscription.tier}</Text>
+              <Text style={styles.status}>{subscription.status}</Text>
+              {subscription.tier === 'FREE' && trialDaysLeft !== null && (
+                <Text style={[styles.trial, trialDaysLeft <= 3 && styles.trialWarning]}>
+                  {trialDaysLeft > 0
+                    ? `Trial: ${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''} left`
+                    : 'Trial expired'}
+                </Text>
+              )}
+            </View>
+            <Text style={styles.chevron}>›</Text>
+          </View>
+        </Pressable>
+      ) : (
+        <Text style={styles.empty}>No subscription found.</Text>
+      )}
+
       {artist && (
         <>
-          <Text style={styles.label}>Name</Text>
-          <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder="Your artist name"
-          />
+          <Text style={styles.sectionTitle}>Artist Details</Text>
+          <View style={styles.card}>
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Your artist name"
+            />
 
-          <Text style={styles.label}>Bio</Text>
-          <TextInput
-            style={[styles.input, styles.textarea]}
-            value={bio}
-            onChangeText={setBio}
-            placeholder="Tell listeners about yourself"
-            multiline
-            numberOfLines={4}
-          />
+            <Text style={styles.label}>Bio</Text>
+            <TextInput
+              style={[styles.input, styles.textarea]}
+              value={bio}
+              onChangeText={setBio}
+              placeholder="Tell listeners about yourself"
+              multiline
+              numberOfLines={4}
+            />
 
-          <Text style={styles.label}>Social Links</Text>
-          <TextInput
-            style={styles.input}
-            value={socialLinks}
-            onChangeText={setSocialLinks}
-            placeholder="https://..."
-          />
+            <Text style={styles.label}>Social Links</Text>
+            <TextInput
+              style={styles.input}
+              value={socialLinks}
+              onChangeText={setSocialLinks}
+              placeholder="https://..."
+            />
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-          {success ? <Text style={styles.success}>Saved!</Text> : null}
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {success ? <Text style={styles.success}>Saved!</Text> : null}
 
-          <Pressable
-            style={[styles.button, styles.buttonPrimary]}
-            onPress={handleSave}
-            disabled={isSaving}
-          >
-            <Text style={styles.buttonText}>
-              {isSaving ? 'Saving...' : 'Save'}
+            <Pressable
+              style={[styles.button, styles.buttonPrimary]}
+              onPress={handleSaveArtist}
+              disabled={isSaving}
+            >
+              <Text style={styles.buttonText}>{isSaving ? 'Saving...' : 'Save'}</Text>
+            </Pressable>
+          </View>
+        </>
+      )}
+
+      {!artist && role === 'LISTENER' && (
+        <>
+          <Text style={styles.sectionTitle}>Become an Artist</Text>
+          <View style={styles.card}>
+            <Text style={styles.hint}>
+              Want to upload your own music? Apply to become an artist from the Hvalya website.
             </Text>
-          </Pressable>
+          </View>
         </>
       )}
 
@@ -133,6 +211,35 @@ const styles = StyleSheet.create({
   content: { paddingTop: 60, paddingHorizontal: 16, paddingBottom: 40 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: { fontSize: 24, fontWeight: '700', marginBottom: 20 },
+  sectionTitle: { fontSize: 14, fontWeight: '600', color: '#888', marginTop: 24, marginBottom: 8 },
+  card: {
+    borderWidth: 1,
+    borderColor: '#eee',
+    borderRadius: 12,
+    padding: 16,
+  },
+  email: { fontSize: 16, fontWeight: '600' },
+  roleBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#eef2ff',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginTop: 8,
+  },
+  roleBadgeText: { fontSize: 12, fontWeight: '600', color: '#1e40af' },
+  subscriptionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  tier: { fontSize: 18, fontWeight: '700' },
+  status: { fontSize: 13, color: '#888', marginTop: 2 },
+  trial: { fontSize: 13, color: '#888', marginTop: 4 },
+  trialWarning: { color: '#d97706', fontWeight: '600' },
+  chevron: { fontSize: 22, color: '#ccc' },
+  empty: { color: '#888', fontSize: 14 },
+  hint: { fontSize: 14, color: '#666', lineHeight: 20 },
   label: { fontSize: 13, color: '#888', marginBottom: 4, marginTop: 12 },
   input: {
     borderWidth: 1,
@@ -152,6 +259,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   buttonPrimary: { backgroundColor: '#1e40af' },
-  buttonDanger: { backgroundColor: '#d00' },
+  buttonDanger: { backgroundColor: '#d00', marginTop: 32 },
   buttonText: { color: '#fff', fontWeight: '600' },
 });
