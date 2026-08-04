@@ -1,5 +1,14 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
 
+const ASSET_BASE_URL = API_URL.replace(/\/api\/v1$/, '');
+
+export function resolveAudioUrl(audioUrl: string): string {
+  if (/^https?:\/\//.test(audioUrl)) {
+    return audioUrl;
+  }
+  return `${ASSET_BASE_URL}${audioUrl}`;
+}
+
 export interface Track {
   id: string;
   title: string;

@@ -82,7 +82,7 @@ export class TracksController {
     }),
   )
   async uploadAudio(@UploadedFile() file: Express.Multer.File) {
-    const audioUrl = `${process.env.API_URL ?? 'http://localhost:3001'}/uploads/audio/${file.filename}`;
+    const audioUrl = `/uploads/audio/${file.filename}`;
     return { audioUrl };
   }
 

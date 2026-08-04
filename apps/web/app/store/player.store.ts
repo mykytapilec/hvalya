@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { api } from '../lib/api';
+import { api, resolveAudioUrl } from '../lib/api';
 
 interface PlayableTrack {
   id: string;
@@ -47,7 +47,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
     try {
       const { audioUrl } = await api.tracks.play(token, track.id);
       set({
-        currentTrack: { ...track, audioUrl },
+        currentTrack: { ...track, audioUrl: resolveAudioUrl(audioUrl) },
         isPlaying: true,
         isLoading: false,
         position: 0,

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, type Track } from '../lib/api';
+import { api, resolveAudioUrl, type Track } from '../lib/api';
 
 interface PlayableTrack {
   id: string;
@@ -37,7 +37,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
     set({ isLoading: true, error: '' });
     try {
       const { audioUrl } = await api.tracks.play(token, track.id);
-      set({ currentTrack: { ...track, audioUrl }, isPlaying: true, isLoading: false });
+      set({ currentTrack: { ...track, audioUrl: resolveAudioUrl(audioUrl) }, isPlaying: true, isLoading: false });
     } catch (err) {
       set({
         error: err instanceof Error ? err.message : 'Failed to play track',
