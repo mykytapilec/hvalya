@@ -14,18 +14,13 @@
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\""
   },
   "devDependencies": {
-    "turbo": "^2.0.0",
     "prettier": "^3.3.0",
+    "turbo": "^2.0.0",
     "typescript": "^5.5.0"
   },
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
   },
-  "version": "1.0.0",
-  "dependencies": {
-    "expo": "~57.0.2",
-    "react": "19.2.3",
-    "react-native": "0.86.0"
-  }
+  "version": "1.0.0"
 }

@@ -26,8 +26,8 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-status-bar",
-      "expo-audio"
+      "expo-audio",
+      "expo-asset"
     ]
   }
 }

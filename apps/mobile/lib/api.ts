@@ -1,4 +1,22 @@
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
+
+const ENV_API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+
+const isAndroidEmulator = Platform.OS === 'android' && __DEV__ && !Constants.isDevice;
+
+const API_URL = isAndroidEmulator
+  ? ENV_API_URL.replace(/^http:\/\/[^:/]+/, 'http://10.0.2.2')
+  : ENV_API_URL;
+
+const ASSET_BASE_URL = API_URL.replace(/\/api\/v1$/, '');
+
+export function resolveAudioUrl(audioUrl: string): string {
+  if (/^https?:\/\//.test(audioUrl)) {
+    return audioUrl;
+  }
+  return `${ASSET_BASE_URL}${audioUrl}`;
+}
 interface RegisterPayload {
   email: string;
   username: string;

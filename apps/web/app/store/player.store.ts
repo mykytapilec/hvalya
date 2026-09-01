@@ -1,12 +1,13 @@
 'use client';
 
 import { create } from 'zustand';
-import { api } from '../lib/api';
+import { api, resolveAudioUrl } from '../lib/api';
 
 interface PlayableTrack {
   id: string;
   title: string;
   artistId: string;
+  coverUrl?: string | null;
 }
 
 interface CurrentTrack extends PlayableTrack {
@@ -46,7 +47,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
     try {
       const { audioUrl } = await api.tracks.play(token, track.id);
       set({
-        currentTrack: { ...track, audioUrl },
+        currentTrack: { ...track, audioUrl: resolveAudioUrl(audioUrl) },
         isPlaying: true,
         isLoading: false,
         position: 0,
@@ -75,6 +76,5 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   collapse: () => set({ isExpanded: false }),
   setPosition: (seconds) => set({ position: seconds }),
   setDuration: (seconds) => set({ duration: seconds }),
-  // Overwritten by the Player component once the <audio> element exists.
   seekTo: () => {},
 }));

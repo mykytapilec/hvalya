@@ -10,8 +10,9 @@ interface TrackListProps {
   tracks: Track[];
   myArtistId?: string | null;
   onTracksChange?: (tracks: Track[]) => void;
+  releaseCoverUrl?: string | null;
 }
-export default function TrackList({ tracks, myArtistId, onTracksChange }: TrackListProps) {
+export default function TrackList({ tracks, myArtistId, onTracksChange, releaseCoverUrl }: TrackListProps) {
   const router = useRouter();
   const play = usePlayerStore((s) => s.play);
   const role = useAuthStore((s) => s.role);
@@ -44,7 +45,7 @@ export default function TrackList({ tracks, myArtistId, onTracksChange }: TrackL
       router.push('/login');
       return;
     }
-    await play(track, token);
+    await play({ ...track, coverUrl: releaseCoverUrl }, token);
   }
   return (
     <>

@@ -89,6 +89,7 @@ export default function ReleaseDetailPage() {
         tracks={release.tracks}
         myArtistId={myArtistId}
         onTracksChange={handleTracksChange}
+        releaseCoverUrl={release.coverUrl}
       />
     </div>
   );
