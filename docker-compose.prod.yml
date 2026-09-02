@@ -43,8 +43,8 @@ services:
 
   ai-service:
     build:
-      context: .
-      dockerfile: apps/ai-service/Dockerfile
+      context: ./apps/ai-service
+      dockerfile: Dockerfile
     container_name: hvalya-ai-prod
     restart: unless-stopped
     depends_on:
@@ -56,6 +56,19 @@ services:
       INTERNAL_API_KEY: ${INTERNAL_API_KEY}
     ports:
       - "8000:8000"
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://13.61.26.3:3001/api/v1
+    container_name: hvalya-web-prod
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "3002:3002"
 
 volumes:
   pgdata:
