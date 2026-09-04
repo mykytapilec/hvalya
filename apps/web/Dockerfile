@@ -5,12 +5,14 @@ WORKDIR /app
 COPY package*.json ./
 COPY turbo.json ./
 COPY packages/types/package*.json ./packages/types/
+COPY packages/typescript-config/ ./packages/typescript-config/
 COPY apps/web/package*.json ./apps/web/
 RUN npm ci
 
 COPY packages/types/ ./packages/types/
 COPY apps/web/ ./apps/web/
 
+# Build shared types
 RUN npm run build --workspace=packages/types
 RUN mkdir -p node_modules/@hvalya/types/dist && \
     find packages/types/dist -maxdepth 1 -type f -exec cp {} node_modules/@hvalya/types/dist/ \;
