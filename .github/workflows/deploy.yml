@@ -28,6 +28,8 @@ jobs:
             cat > .env.prod << EOF
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             INTERNAL_API_KEY=${{ secrets.INTERNAL_API_KEY }}
+            RDS_HOST=${{ secrets.RDS_HOST }}
+            RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
             EOF
 
             echo "Rebuilding and restarting containers..."
