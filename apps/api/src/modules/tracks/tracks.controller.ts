@@ -14,7 +14,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { extname } from 'path';
 import { UserRole } from '@hvalya/types';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -27,6 +27,7 @@ import { CreateTrackDto } from './application/dto/create-track.dto';
 import { UpdateTrackDto } from './application/dto/update-track.dto';
 import { TrackEntity } from '../../domain/track/track.entity';
 import { PlaysService } from '../plays/application/plays.service';
+import { S3Service } from '../../infrastructure/s3/s3.service';
 
 interface AuthenticatedRequest {
   user: { id: string; email: string; username: string; role: UserRole };
@@ -38,6 +39,7 @@ export class TracksController {
     private readonly tracksService: TracksService,
     private readonly artistsService: ArtistsService,
     private readonly playsService: PlaysService,
+    private readonly s3Service: S3Service,
   ) {}
 
   @Get()
@@ -57,7 +59,8 @@ export class TracksController {
   async getPlayUrl(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     const track = await this.tracksService.findById(id);
     await this.playsService.recordPlay(req.user.id, id);
-    return { audioUrl: track.audioUrl };
+    const audioUrl = await this.s3Service.getPresignedUrl(track.audioUrl, 3600);
+    return { audioUrl };
   }
 
   @Post('upload')
@@ -65,13 +68,7 @@ export class TracksController {
   @Roles(UserRole.ARTIST, UserRole.ADMIN)
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/audio',
-        filename: (_req, file, cb) => {
-          const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-          cb(null, `${unique}${extname(file.originalname)}`);
-        },
-      }),
+      storage: memoryStorage(),
       fileFilter: (_req, file, cb) => {
         if (!file.mimetype.startsWith('audio/')) {
           return cb(new Error('Only audio files are allowed'), false);
@@ -82,8 +79,10 @@ export class TracksController {
     }),
   )
   async uploadAudio(@UploadedFile() file: Express.Multer.File) {
-    const audioUrl = `/uploads/audio/${file.filename}`;
-    return { audioUrl };
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const key = `audio/${unique}${extname(file.originalname)}`;
+    await this.s3Service.uploadFile(file.buffer, key, file.mimetype);
+    return { audioUrl: key };
   }
 
   @Post()
