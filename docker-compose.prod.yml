@@ -13,10 +13,12 @@ services:
       JWT_EXPIRES_IN: 7d
       AI_SERVICE_URL: http://ai-service:8000
       INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
     ports:
       - "3001:3001"
-    volumes:
-      - uploads:/app/apps/api/uploads
 
   ai-service:
     build:
@@ -46,6 +48,3 @@ services:
       - api
     ports:
       - "3002:3002"
-
-volumes:
-  uploads:
