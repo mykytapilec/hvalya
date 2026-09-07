@@ -11,8 +11,15 @@ interface TrackListProps {
   myArtistId?: string | null;
   onTracksChange?: (tracks: Track[]) => void;
   releaseCoverUrl?: string | null;
+  coverByAlbumId?: Record<string, string | null>;
 }
-export default function TrackList({ tracks, myArtistId, onTracksChange, releaseCoverUrl }: TrackListProps) {
+export default function TrackList({
+  tracks,
+  myArtistId,
+  onTracksChange,
+  releaseCoverUrl,
+  coverByAlbumId,
+}: TrackListProps) {
   const router = useRouter();
   const play = usePlayerStore((s) => s.play);
   const role = useAuthStore((s) => s.role);
@@ -40,12 +47,17 @@ export default function TrackList({ tracks, myArtistId, onTracksChange, releaseC
     onTracksChange?.(tracks.filter((t) => t.id !== deletingTrack.id));
     setDeletingTrack(null);
   }
+  function resolveCover(track: Track): string | null {
+    if (releaseCoverUrl !== undefined) return releaseCoverUrl;
+    if (coverByAlbumId && track.albumId) return coverByAlbumId[track.albumId] ?? null;
+    return null;
+  }
   async function handlePlay(track: Track) {
     if (!token) {
       router.push('/login');
       return;
     }
-    await play({ ...track, coverUrl: releaseCoverUrl }, token);
+    await play({ ...track, coverUrl: resolveCover(track) }, token);
   }
   return (
     <>
