@@ -57,7 +57,11 @@ export default function TrackList({
       router.push('/login');
       return;
     }
-    await play({ ...track, coverUrl: resolveCover(track) }, token);
+    const albumTracks = track.albumId
+      ? tracks.filter((t) => t.albumId === track.albumId)
+      : [track];
+    const queue = albumTracks.map((t) => ({ ...t, coverUrl: resolveCover(t) }));
+    await play({ ...track, coverUrl: resolveCover(track) }, token, queue);
   }
   return (
     <>
