@@ -73,13 +73,15 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
   playNext: async (token) => {
     const { queue, queueIndex, play } = get();
-    if (queueIndex < 0 || queueIndex >= queue.length - 1) return;
-    await play(queue[queueIndex + 1], token, queue);
+    const next = queue[queueIndex + 1];
+    if (!next) return;
+    await play(next, token, queue);
   },
   playPrev: async (token) => {
     const { queue, queueIndex, play } = get();
-    if (queueIndex <= 0) return;
-    await play(queue[queueIndex - 1], token, queue);
+    const prev = queue[queueIndex - 1];
+    if (!prev) return;
+    await play(prev, token, queue);
   },
   pause: () => set({ isPlaying: false }),
   resume: () => set({ isPlaying: true }),
