@@ -11,11 +11,25 @@ function formatTime(seconds: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+function modeIcon(mode: string): string {
+  if (mode === 'shuffle') return '🔀';
+  if (mode === 'repeat') return '🔂';
+  return '➡️';
+}
+
+function modeLabel(mode: string): string {
+  if (mode === 'shuffle') return 'Shuffle';
+  if (mode === 'repeat') return 'Repeat';
+  return 'Normal';
+}
+
 export default function Player() {
   const {
     currentTrack,
     queue,
     queueIndex,
+    shuffleHistory,
+    playbackMode,
     isPlaying,
     isLoading,
     error,
@@ -32,6 +46,8 @@ export default function Player() {
     setVolume,
     playNext,
     playPrev,
+    handleTrackEnded,
+    cyclePlaybackMode,
   } = usePlayerStore();
   const token = useAuthStore((s) => s.token);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -48,7 +64,9 @@ export default function Player() {
 
     const handleTimeUpdate = () => setPosition(audio.currentTime);
     const handleLoadedMetadata = () => setDuration(audio.duration || 0);
-    const handleEnded = () => usePlayerStore.setState({ isPlaying: false, position: 0 });
+    const handleEnded = () => {
+      if (token) handleTrackEnded(token);
+    };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
@@ -59,11 +77,14 @@ export default function Player() {
         audio.currentTime = seconds;
         setPosition(seconds);
       },
+      restartTrack: () => {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+        usePlayerStore.setState({ isPlaying: true, position: 0 });
+      },
     });
 
-    audio.play().catch(() => {
-      /* ignore autoplay/interrupt errors */
-    });
+    audio.play().catch(() => {});
 
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
@@ -76,9 +97,7 @@ export default function Player() {
   useEffect(() => {
     if (!audioRef.current) return;
     if (isPlaying) {
-      audioRef.current.play().catch(() => {
-        /* ignore autoplay/interrupt errors */
-      });
+      audioRef.current.play().catch(() => {});
     } else {
       audioRef.current.pause();
     }
@@ -93,8 +112,8 @@ export default function Player() {
   if (!currentTrack && !error && !isLoading) return null;
 
   const progressPct = duration > 0 ? (position / duration) * 100 : 0;
-  const hasNext = queueIndex >= 0 && queueIndex < queue.length - 1;
-  const hasPrev = queueIndex > 0;
+  const hasNext = playbackMode === 'shuffle' ? queue.length > 1 : queueIndex < queue.length - 1;
+  const hasPrev = playbackMode === 'shuffle' ? shuffleHistory.length > 0 : queueIndex > 0;
 
   function handleSeek(e: ChangeEvent<HTMLInputElement>) {
     usePlayerStore.getState().seekTo(Number(e.target.value));
@@ -118,7 +137,6 @@ export default function Player() {
     <>
       {!isExpanded && (
         <div
-          onClick={() => currentTrack && expand()}
           style={{
             position: 'fixed',
             bottom: 0,
@@ -126,7 +144,6 @@ export default function Player() {
             right: 0,
             background: 'var(--brand-blue-dark)',
             color: '#fff',
-            cursor: currentTrack ? 'pointer' : 'default',
             zIndex: 900,
           }}
         >
@@ -143,29 +160,77 @@ export default function Player() {
               }}
             />
           </div>
-          <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
             {error ? (
               <span style={{ color: '#fca5a5', fontSize: 14 }}>{error}</span>
             ) : isLoading ? (
               <span style={{ fontSize: 14 }}>Loading...</span>
             ) : (
               <>
-                {currentTrack?.coverUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={currentTrack.coverUrl} alt="" style={miniCoverImgStyle} />
-                ) : (
-                  <div style={miniCoverPlaceholderStyle} />
-                )}
-                <strong style={{ flex: 1, fontSize: 14, fontWeight: 500 }}>{currentTrack?.title}</strong>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    isPlaying ? pause() : resume();
+                <div
+                  onClick={() => currentTrack && expand()}
+                  style={{ cursor: currentTrack ? 'pointer' : 'default' }}
+                >
+                  {currentTrack?.coverUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={currentTrack.coverUrl} alt="" style={miniCoverImgStyle} />
+                  ) : (
+                    <div style={miniCoverPlaceholderStyle} />
+                  )}
+                </div>
+                <strong
+                  onClick={() => currentTrack && expand()}
+                  style={{
+                    width: 140,
+                    flexShrink: 0,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    cursor: currentTrack ? 'pointer' : 'default',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
                   }}
+                >
+                  {currentTrack?.title}
+                </strong>
+
+                <button onClick={handlePrev} disabled={!hasPrev} style={miniIconButtonStyle(hasPrev)}>
+                  ⏮
+                </button>
+                <button
+                  onClick={() => (isPlaying ? pause() : resume())}
                   style={miniButtonStyle}
                 >
                   <span style={{ marginLeft: isPlaying ? 0 : 2 }}>{isPlaying ? '⏸' : '▶'}</span>
                 </button>
+                <button onClick={handleNext} disabled={!hasNext} style={miniIconButtonStyle(hasNext)}>
+                  ⏭
+                </button>
+
+                <button
+                  onClick={cyclePlaybackMode}
+                  title={modeLabel(playbackMode)}
+                  style={miniIconButtonStyle(true, playbackMode !== 'normal')}
+                >
+                  {modeIcon(playbackMode)}
+                </button>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 100 }}>
+                  <span style={{ fontSize: 12 }}>🔈</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    value={volume}
+                    onChange={handleVolumeChange}
+                    style={{ flex: 1, accentColor: 'var(--brand-yellow)' }}
+                  />
+                </div>
+
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', flexShrink: 0 }}>
+                  {formatTime(position)} / {formatTime(duration)}
+                </span>
               </>
             )}
           </div>
@@ -247,7 +312,14 @@ export default function Player() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginTop: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 32 }}>
+              <button
+                onClick={cyclePlaybackMode}
+                title={modeLabel(playbackMode)}
+                style={skipButtonStyle(true, playbackMode !== 'normal')}
+              >
+                {modeIcon(playbackMode)}
+              </button>
               <button onClick={handlePrev} disabled={!hasPrev} style={skipButtonStyle(hasPrev)}>
                 ⏮
               </button>
@@ -257,9 +329,13 @@ export default function Player() {
               <button onClick={handleNext} disabled={!hasNext} style={skipButtonStyle(hasNext)}>
                 ⏭
               </button>
+              <div style={{ width: 44 }} />
             </div>
+            <p style={{ marginTop: 8, fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+              {modeLabel(playbackMode)}
+            </p>
 
-            <div style={{ width: '100%', marginTop: 32, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: '100%', marginTop: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 14 }}>🔈</span>
               <input
                 type="range"
@@ -315,17 +391,35 @@ const miniButtonStyle: CSSProperties = {
   background: 'rgba(255,255,255,0.15)',
   border: 'none',
   color: '#fff',
-  width: 32,
-  height: 32,
+  width: 30,
+  height: 30,
   borderRadius: '50%',
   cursor: 'pointer',
-  fontSize: 14,
+  fontSize: 13,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   padding: 0,
   lineHeight: 1,
+  flexShrink: 0,
 };
+
+function miniIconButtonStyle(enabled: boolean, active = false): CSSProperties {
+  return {
+    background: active ? 'rgba(250,204,21,0.25)' : 'transparent',
+    border: 'none',
+    color: active ? 'var(--brand-yellow)' : '#fff',
+    cursor: enabled ? 'pointer' : 'default',
+    opacity: enabled ? 1 : 0.35,
+    fontSize: 15,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 4,
+    borderRadius: 6,
+    flexShrink: 0,
+  };
+}
 
 const collapseButtonStyle: CSSProperties = {
   background: 'transparent',
@@ -355,14 +449,14 @@ const playButtonStyle: CSSProperties = {
   lineHeight: 1,
 };
 
-function skipButtonStyle(enabled: boolean): CSSProperties {
+function skipButtonStyle(enabled: boolean, active = false): CSSProperties {
   return {
     width: 44,
     height: 44,
     borderRadius: '50%',
-    background: 'rgba(255,255,255,0.15)',
+    background: active ? 'rgba(250,204,21,0.25)' : 'rgba(255,255,255,0.15)',
     border: 'none',
-    color: '#fff',
+    color: active ? 'var(--brand-yellow)' : '#fff',
     fontSize: 18,
     cursor: enabled ? 'pointer' : 'default',
     opacity: enabled ? 1 : 0.35,
