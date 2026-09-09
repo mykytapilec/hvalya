@@ -46,7 +46,8 @@ interface PlayerState {
 function pickRandomExcluding(queue: PlayableTrack[], excludeId: string): PlayableTrack | null {
   const candidates = queue.filter((t) => t.id !== excludeId);
   if (candidates.length === 0) return null;
-  return candidates[Math.floor(Math.random() * candidates.length)];
+  const picked = candidates[Math.floor(Math.random() * candidates.length)];
+  return picked ?? null;
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
