@@ -16,6 +16,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <div style={{ paddingBottom: 80 }}>
       <nav style={{ padding: '16px', borderBottom: '1px solid #eee', display: 'flex', gap: 16, alignItems: 'center' }}>
+        <a href="/">Home</a>
         <a href="/tracks">Tracks</a>
         <a href="/artists">Artists</a>
         <a href="/releases">Releases</a>

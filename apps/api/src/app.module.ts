@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
+import { S3Module } from './infrastructure/s3/s3.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AppController } from './app.controller';
 import { ArtistsModule } from './modules/artists/artists.module';
@@ -11,14 +10,10 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
 import { ArtistApplicationsModule } from './modules/artist-applications/artist-applications.module';
 import { ReleasesModule } from './modules/releases/releases.module';
 import { InternalModule } from './internal/internal.module';
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/uploads',
-    }),
+    S3Module,
     PrismaModule,
     AuthModule,
     ArtistsModule,

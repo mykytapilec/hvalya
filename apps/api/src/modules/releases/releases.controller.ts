@@ -14,7 +14,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { extname } from 'path';
 import { UserRole } from '@hvalya/types';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -24,28 +24,33 @@ import { ReleasesService } from './application/releases.service';
 import { ArtistsService } from '../artists/application/artists.service';
 import { CreateReleaseDto } from './application/dto/create-release.dto';
 import { UpdateReleaseDto } from './application/dto/update-release.dto';
-
-
+import { S3Service } from '../../infrastructure/s3/s3.service';
+import { ReleaseEntity } from '../../domain/release/release.entity';
 
 interface AuthenticatedRequest {
   user: { id: string; email: string; username: string; role: UserRole };
 }
+
+const COVER_PRESIGN_TTL = 7 * 24 * 60 * 60; // 7 days
 
 @Controller('releases')
 export class ReleasesController {
   constructor(
     private readonly releasesService: ReleasesService,
     private readonly artistsService: ArtistsService,
+    private readonly s3Service: S3Service,
   ) {}
 
   @Get()
-  findAll() {
-    return this.releasesService.findAll();
+  async findAll() {
+    const releases = await this.releasesService.findAll();
+    return Promise.all(releases.map((r) => this.toPublicRelease(r)));
   }
 
   @Get(':id')
-  findById(@Param('id') id: string) {
-    return this.releasesService.findById(id);
+  async findById(@Param('id') id: string) {
+    const release = await this.releasesService.findById(id);
+    return this.toPublicRelease(release);
   }
 
   @Post()
@@ -76,13 +81,7 @@ export class ReleasesController {
   @Roles(UserRole.ARTIST, UserRole.ADMIN)
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/covers',
-        filename: (_req, file, cb) => {
-          const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-          cb(null, `${unique}${extname(file.originalname)}`);
-        },
-      }),
+      storage: memoryStorage(),
       fileFilter: (_req, file, cb) => {
         if (!file.mimetype.startsWith('image/')) {
           return cb(new Error('Only image files are allowed'), false);
@@ -98,8 +97,10 @@ export class ReleasesController {
     @Request() req: AuthenticatedRequest,
   ) {
     const requesterArtistId = await this.resolveRequesterArtistId(req);
-    const coverUrl = `${process.env.API_URL ?? 'http://localhost:3001'}/uploads/covers/${file.filename}`;
-    return this.releasesService.updateCover(id, coverUrl, requesterArtistId, req.user.role);
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const key = `covers/${unique}${extname(file.originalname)}`;
+    await this.s3Service.uploadFile(file.buffer, key, file.mimetype);
+    return this.releasesService.updateCover(id, key, requesterArtistId, req.user.role);
   }
 
   @Delete(':id')
@@ -120,5 +121,14 @@ export class ReleasesController {
     if (req.user.role === UserRole.ADMIN) return '';
     const artist = await this.artistsService.findByUserId(req.user.id);
     return artist.id;
+  }
+
+  private async toPublicRelease(release: ReleaseEntity) {
+    if (!release.coverUrl) return release;
+    const coverUrl = await this.s3Service.getPresignedUrl(
+      release.coverUrl,
+      COVER_PRESIGN_TTL,
+    );
+    return { ...release, coverUrl };
   }
 }

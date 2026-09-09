@@ -9,14 +9,21 @@ export default function TracksScreen() {
   const router = useRouter();
   const token = useAuthStore((s) => s.token);
   const [tracks, setTracks] = useState<Track[]>([]);
+  const [coverByAlbumId, setCoverByAlbumId] = useState<Record<string, string | null>>({});
   const [isLoading, setIsLoading] = useState(true);
   const play = usePlayerStore((s) => s.play);
   const currentTrack = usePlayerStore((s) => s.currentTrack);
 
   useEffect(() => {
-    api.tracks
-      .findAll(token ?? undefined)
-      .then(setTracks)
+    Promise.all([api.tracks.findAll(token ?? undefined), api.releases.findAll()])
+      .then(([tracksResult, releasesResult]) => {
+        setTracks(tracksResult);
+        const coverMap: Record<string, string | null> = {};
+        releasesResult.forEach((release) => {
+          coverMap[release.id] = release.coverUrl;
+        });
+        setCoverByAlbumId(coverMap);
+      })
       .catch(() => setTracks([]))
       .finally(() => setIsLoading(false));
   }, [token]);
@@ -29,7 +36,8 @@ export default function TracksScreen() {
       ]);
       return;
     }
-    await play(track, token);
+    const coverUrl = track.albumId ? coverByAlbumId[track.albumId] ?? null : null;
+    await play({ ...track, coverUrl }, token);
   }
 
   if (isLoading) {

@@ -19,7 +19,7 @@ export default function RegisterPage() {
     try {
       const { accessToken } = await api.auth.register({ email, username, password });
       setToken(accessToken);
-      router.push('/tracks');
+      router.push('/');
     } catch (err: any) {
       setError(err.message);
     }
