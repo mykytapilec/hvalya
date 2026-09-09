@@ -184,6 +184,10 @@ export const api = {
     delete: (token: string, id: string) =>
       request<void>(`/artists/${id}`, { method: 'DELETE' }, token),
   },
+  users: {
+    getRecommendations: (token: string, limit = 10) =>
+      request<Track[]>(`/users/me/recommendations?limit=${limit}`, {}, token),
+  },
   releases: {
     findAll: () => request<Release[]>('/releases'),
     findById: (id: string) => request<Release>(`/releases/${id}`),

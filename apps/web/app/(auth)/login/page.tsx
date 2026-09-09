@@ -18,7 +18,7 @@ export default function LoginPage() {
     try {
       const { accessToken } = await api.auth.login({ email, password });
       setToken(accessToken);
-      router.push('/tracks');
+      router.push('/');
     } catch (err: any) {
       setError(err.message);
     }
