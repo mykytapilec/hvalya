@@ -53,49 +53,52 @@ export default function ReleasesPage() {
 
   return (
     <div>
-      <h1>Releases</h1>
-      {releases.length === 0 && <p>No releases yet.</p>}
-      <ul style={{ listStyle: 'none', padding: 0, marginTop: 16 }}>
+      <h1 style={{ fontSize: 26, marginBottom: 20 }}>Releases</h1>
+      {releases.length === 0 && <p style={{ color: 'var(--color-muted)' }}>No releases yet.</p>}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {releases.map((release) => (
-          <li
+          <div
             key={release.id}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: 16,
-              padding: '12px 0',
-              borderBottom: '1px solid var(--color-border)',
+              padding: '12px',
+              borderRadius: 10,
+              transition: 'background 0.15s ease',
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-border)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
           >
             {release.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={release.coverUrl}
                 alt={release.title}
-                style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 6 }}
+                style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8 }}
               />
             ) : (
-              <div style={{ width: 56, height: 56, borderRadius: 6, background: 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>
+              <div style={{ width: 56, height: 56, borderRadius: 8, background: 'linear-gradient(135deg, var(--brand-blue-light), var(--brand-yellow))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>
                 🎵
               </div>
             )}
-            <div style={{ flex: 1 }}>
-              <a href={`/releases/${release.id}`} style={{ fontWeight: 600 }}>
-                {getArtistName(release)} - {release.title}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <a href={`/releases/${release.id}`} style={{ fontWeight: 600, fontSize: 15 }}>
+                {getArtistName(release)} — {release.title}
               </a>
               <div style={{ fontSize: 13, color: 'var(--color-muted)', marginTop: 2 }}>
                 {RELEASE_TYPE_LABELS[release.type]} · {release.tracks.length} track{release.tracks.length !== 1 ? 's' : ''} · {new Date(release.releasedAt).toLocaleDateString()}
               </div>
             </div>
             {canManage(release) && (
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                 <button onClick={() => router.push(`/releases/${release.id}/edit`)}>Edit</button>
                 <button className="btn-danger" onClick={() => setDeletingRelease(release)}>Delete</button>
               </div>
             )}
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
 
       {deletingRelease && (
         <ConfirmDeleteModal

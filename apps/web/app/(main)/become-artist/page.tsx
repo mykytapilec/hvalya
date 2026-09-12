@@ -33,12 +33,13 @@ export default function BecomeArtistPage() {
 
   if (success) {
     return (
-      <div>
-        <h1>Application Submitted</h1>
-        <p style={{ color: 'var(--color-success)', marginTop: 12 }}>
+      <div style={{ maxWidth: 480, margin: '40px auto', textAlign: 'center' }}>
+        <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
+        <h1 style={{ fontSize: 24, marginBottom: 8 }}>Application Submitted</h1>
+        <p style={{ color: 'var(--color-success)' }}>
           Your application has been submitted and is pending review.
         </p>
-        <button className="btn-primary" onClick={() => router.push('/')} style={{ marginTop: 16 }}>
+        <button className="btn-primary" onClick={() => router.push('/')} style={{ marginTop: 20 }}>
           Go Home
         </button>
       </div>
@@ -46,8 +47,21 @@ export default function BecomeArtistPage() {
   }
 
   return (
-    <div style={{ maxWidth: 480 }}>
-      <h1>Become an Artist</h1>
+    <div style={{ maxWidth: 480, margin: '0 auto' }}>
+      <div
+        style={{
+          padding: 24,
+          borderRadius: 12,
+          background: 'linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dark))',
+          color: '#fff',
+          marginBottom: 24,
+        }}
+      >
+        <h1 style={{ fontSize: 22, marginBottom: 8 }}>Become an Artist</h1>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.85)' }}>
+          Apply to upload your own music and start earning from every stream.
+        </p>
+      </div>
 
       <label>Artist Name</label>
       <input

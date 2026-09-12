@@ -39,13 +39,8 @@ export default function TracksPage() {
 
   return (
     <div>
-      <h1>Tracks</h1>
-      <TrackList
-        tracks={tracks}
-        myArtistId={myArtistId}
-        onTracksChange={setTracks}
-        coverByAlbumId={coverByAlbumId}
-      />
+      <h1 style={{ fontSize: 26, marginBottom: 20 }}>Tracks</h1>
+      <TrackList tracks={tracks} myArtistId={myArtistId} onTracksChange={setTracks} coverByAlbumId={coverByAlbumId} />
     </div>
   );
 }

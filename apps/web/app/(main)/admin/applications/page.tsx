@@ -63,21 +63,21 @@ export default function AdminApplicationsPage() {
 
   return (
     <div style={{ maxWidth: 800 }}>
-      <h1>Artist Applications</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <h1 style={{ fontSize: 26, marginBottom: 20 }}>Artist Applications</h1>
+      {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
 
       {applications.length === 0 ? (
-        <p>No pending applications.</p>
+        <p style={{ color: 'var(--color-muted)' }}>No pending applications.</p>
       ) : (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {applications.map((app) => (
-            <li
+            <div
               key={app.id}
               style={{
-                border: '1px solid #eee',
-                borderRadius: 8,
+                border: '1px solid var(--color-border)',
+                borderRadius: 12,
                 padding: 20,
-                marginBottom: 16,
+                borderTop: '4px solid var(--brand-blue)',
               }}
             >
               <p>
@@ -90,13 +90,13 @@ export default function AdminApplicationsPage() {
                 <br />
                 {app.socialLinks}
               </p>
-              <p style={{ marginTop: 12, color: '#888', fontSize: 13 }}>
+              <p style={{ marginTop: 12, color: 'var(--color-muted)', fontSize: 13 }}>
                 Submitted: {new Date(app.createdAt).toLocaleString()}
               </p>
 
               <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
-                <button onClick={() => handleApprove(app.id)}>Approve</button>
-                <button onClick={() => setRejectingId(app.id)} style={{ color: 'red' }}>
+                <button className="btn-primary" onClick={() => handleApprove(app.id)}>Approve</button>
+                <button className="btn-danger" onClick={() => setRejectingId(app.id)}>
                   Reject
                 </button>
               </div>
@@ -108,9 +108,9 @@ export default function AdminApplicationsPage() {
                     onChange={(e) => setRejectionReason(e.target.value)}
                     placeholder="Reason for rejection..."
                     rows={2}
-                    style={{ display: 'block', width: '100%', padding: 8, marginBottom: 8 }}
+                    style={{ display: 'block', width: '100%', marginBottom: 8 }}
                   />
-                  <button onClick={() => handleReject(app.id)}>Confirm Reject</button>
+                  <button className="btn-danger" onClick={() => handleReject(app.id)}>Confirm Reject</button>
                   <button
                     onClick={() => {
                       setRejectingId(null);
@@ -122,9 +122,9 @@ export default function AdminApplicationsPage() {
                   </button>
                 </div>
               )}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

@@ -42,27 +42,49 @@ export default function AdminArtistsPage() {
 
   return (
     <div>
-      <h1>Manage Artists</h1>
-      <ul style={{ listStyle: 'none', padding: 0 }}>
+      <h1 style={{ fontSize: 26, marginBottom: 20 }}>Manage Artists</h1>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {artists.map((artist) => (
-          <li
+          <div
             key={artist.id}
             style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              padding: '12px 0',
-              borderBottom: '1px solid #eee',
+              padding: '12px 14px',
+              borderRadius: 10,
+              transition: 'background 0.15s ease',
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-border)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
           >
-            <strong>{artist.name}</strong>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, var(--brand-blue-light), var(--brand-yellow))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: '#fff',
+                  flexShrink: 0,
+                }}
+              >
+                {artist.name.charAt(0).toUpperCase()}
+              </div>
+              <strong>{artist.name}</strong>
+            </div>
             <button className="btn-danger" onClick={() => setDeletingArtist(artist)}>
               Delete
             </button>
-          </li>
+          </div>
         ))}
-      </ul>
-      {artists.length === 0 && <p>No artists yet.</p>}
+      </div>
+      {artists.length === 0 && <p style={{ color: 'var(--color-muted)' }}>No artists yet.</p>}
       {deletingArtist && (
         <ConfirmDeleteModal
           title="Delete Artist"

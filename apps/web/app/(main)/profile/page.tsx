@@ -41,8 +41,8 @@ export default function ProfilePage() {
       .finally(() => setIsLoading(false));
   }, [isInitialized, role, token, router]);
 
-if (!isInitialized) return <p>Loading...</p>;
-if (role !== 'ARTIST') return null;
+  if (!isInitialized) return <p>Loading...</p>;
+  if (role !== 'ARTIST') return null;
 
   async function handleSave() {
     if (!token || !artist) return;
@@ -60,12 +60,44 @@ if (role !== 'ARTIST') return null;
     }
   }
 
-  if (role !== 'ARTIST') return null;
   if (isLoading) return <p>Loading...</p>;
 
   return (
-    <div>
-      <h1>My Profile</h1>
+    <div style={{ maxWidth: 480, margin: '0 auto' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          padding: 24,
+          borderRadius: 12,
+          background: 'linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dark))',
+          color: '#fff',
+          marginBottom: 24,
+        }}
+      >
+        <div
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            background: 'var(--brand-yellow)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 24,
+            color: 'var(--brand-blue-dark)',
+            fontWeight: 700,
+            flexShrink: 0,
+          }}
+        >
+          {name.charAt(0).toUpperCase() || '🎤'}
+        </div>
+        <div>
+          <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: 'rgba(255,255,255,0.7)' }}>Artist Profile</p>
+          <h1 style={{ fontSize: 22 }}>{name || 'My Profile'}</h1>
+        </div>
+      </div>
 
       <label>Name</label>
       <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: '100%' }} />
