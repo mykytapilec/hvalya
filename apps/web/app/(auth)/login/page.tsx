@@ -25,7 +25,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ maxWidth: 400, margin: '100px auto', padding: '0 16px' }}>
+    <div style={{ maxWidth: 440, margin: '80px auto', padding: '0 16px' }}>
       <h1>Login</h1>
       <form onSubmit={handleSubmit}>
         <div>
@@ -54,6 +54,27 @@ export default function LoginPage() {
       <p>
         No account? <a href="/register">Register</a>
       </p>
+
+      <div
+        style={{
+          marginTop: 40,
+          paddingTop: 24,
+          borderTop: '1px solid var(--color-border)',
+          color: 'var(--color-muted)',
+          fontSize: 14,
+          lineHeight: 1.6,
+        }}
+      >
+        <p>
+          Welcome to <strong>Hvalya</strong> — a music streaming platform built to support and
+          promote independent artists.
+        </p>
+        <p style={{ marginTop: 8 }}>
+          Sign up and get <strong>30 days free</strong> to explore everything the platform offers.
+          Within that time, you can switch to a Pro monthly plan to keep listening, or — if you're
+          an artist — apply for the ability to upload your music and start earning from plays.
+        </p>
+      </div>
     </div>
   );
 }

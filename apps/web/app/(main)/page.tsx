@@ -1,18 +1,27 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, type Release, type Track } from '../lib/api';
 import { useAuthStore } from '../store/auth.store';
 import TrackList from '../../components/tracks/TrackList';
 
 export default function HomePage() {
+  const router = useRouter();
   const token = useAuthStore((s) => s.token);
+  const isInitialized = useAuthStore((s) => s.isInitialized);
   const [releases, setReleases] = useState<Release[]>([]);
   const [recommendations, setRecommendations] = useState<Track[]>([]);
   const [coverByAlbumId, setCoverByAlbumId] = useState<Record<string, string | null>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [recError, setRecError] = useState('');
+
+  useEffect(() => {
+    if (isInitialized && !token) {
+      router.replace('/login');
+    }
+  }, [isInitialized, token, router]);
 
   useEffect(() => {
     api.releases
@@ -40,11 +49,14 @@ export default function HomePage() {
     api.users
       .getRecommendations(token, 10)
       .then(setRecommendations)
-      .catch((err) => setRecError(err instanceof Error ? err.message : 'Failed to load recommendations'));
+      .catch((err: unknown) =>
+        setRecError(err instanceof Error ? err.message : 'Failed to load recommendations'),
+      );
   }, [token]);
 
   const newestReleases = releases.slice(0, 8);
 
+  if (!isInitialized || (isInitialized && !token)) return null;
   if (isLoading) return <p>Loading...</p>;
 
   return (
@@ -102,11 +114,7 @@ export default function HomePage() {
 
       <section>
         <h1 style={{ marginBottom: 16 }}>For You</h1>
-        {!token ? (
-          <p>
-            <Link href="/login">Log in</Link> to get recommendations based on your taste.
-          </p>
-        ) : recError ? (
+        {recError ? (
           <p style={{ color: 'var(--color-danger)' }}>{recError}</p>
         ) : recommendations.length === 0 ? (
           <p>Listen to a few tracks to get personalized recommendations.</p>
