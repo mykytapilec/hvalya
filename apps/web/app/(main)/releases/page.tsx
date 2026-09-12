@@ -81,7 +81,7 @@ export default function ReleasesPage() {
             )}
             <div style={{ flex: 1 }}>
               <a href={`/releases/${release.id}`} style={{ fontWeight: 600 }}>
-                {getArtistName(release)} — {release.title}
+                {getArtistName(release)} - {release.title}
               </a>
               <div style={{ fontSize: 13, color: 'var(--color-muted)', marginTop: 2 }}>
                 {RELEASE_TYPE_LABELS[release.type]} · {release.tracks.length} track{release.tracks.length !== 1 ? 's' : ''} · {new Date(release.releasedAt).toLocaleDateString()}

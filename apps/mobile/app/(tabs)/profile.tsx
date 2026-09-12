@@ -67,7 +67,7 @@ export default function ProfileScreen() {
         setSocialLinks(a.socialLinks ?? '');
       })
       .catch(() => {
-        // Not an artist — form stays hidden
+        // Not an artist - form stays hidden
       })
       .finally(() => setIsLoadingArtist(false));
   }, [token]);

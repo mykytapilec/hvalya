@@ -4,7 +4,7 @@ from app.models.content_based_recommender import ContentBasedRecommender
 
 
 class FakeNestApiClient:
-    """Test double for NestApiClient — returns canned catalog/history data."""
+    """Test double for NestApiClient - returns canned catalog/history data."""
 
     def __init__(self, catalog: list[dict], history: list[dict]) -> None:
         self._catalog = catalog
@@ -90,7 +90,7 @@ async def test_excludes_already_played_tracks():
 @pytest.mark.asyncio
 async def test_falls_back_to_cold_start_when_no_genre_overlap():
     # History references a track that isn't in the catalog (edge case /
-    # deleted track) — user vector ends up all-zero, so we must not crash
+    # deleted track) - user vector ends up all-zero, so we must not crash
     # and should fall back to a random sample instead.
     history = [{"trackId": "unknown-track", "playedAt": "2026-07-01T00:00:00Z"}]
     client = FakeNestApiClient(catalog=CATALOG, history=history)

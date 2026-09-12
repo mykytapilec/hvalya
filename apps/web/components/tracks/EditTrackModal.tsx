@@ -79,7 +79,7 @@ export default function EditTrackModal({ track, onClose, onSaved }: EditTrackMod
         ))}
       </select>
       <p style={{ fontSize: 12, color: 'var(--color-muted)', marginTop: 4 }}>
-        Only changes if you pick a genre here — overrides the release&apos;s genre for this track.
+        Only changes if you pick a genre here - overrides the release&apos;s genre for this track.
       </p>
 
       {error && <p style={{ color: 'var(--color-danger)', marginTop: 12 }}>{error}</p>}
