@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { type Artist } from "../../app/lib/api";
 
 interface ArtistListProps {
@@ -10,25 +11,53 @@ interface ArtistListProps {
 
 export default function ArtistList({ artists }: ArtistListProps) {
   if (artists.length === 0) {
-    return <p>No artists yet.</p>;
+    return <p style={{ color: 'var(--color-muted)' }}>No artists yet.</p>;
   }
 
   return (
-    <ul style={{ listStyle: 'none', padding: 0 }}>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+        gap: 20,
+      }}
+    >
       {artists.map((artist) => (
-        <li
+        <Link
           key={artist.id}
+          href={`/artists/${artist.id}`}
           style={{
             display: 'flex',
-            justifyContent: 'space-between',
+            flexDirection: 'column',
             alignItems: 'center',
-            padding: '12px 0',
-            borderBottom: '1px solid #eee',
+            textAlign: 'center',
+            padding: 20,
+            borderRadius: 12,
+            transition: 'background 0.15s ease',
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-border)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
         >
-          <strong>{artist.name}</strong>
-        </li>
+          <div
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, var(--brand-blue-light), var(--brand-yellow))',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 26,
+              fontWeight: 700,
+              color: '#fff',
+              marginBottom: 12,
+            }}
+          >
+            {artist.name.charAt(0).toUpperCase()}
+          </div>
+          <strong style={{ fontSize: 14 }}>{artist.name}</strong>
+        </Link>
       ))}
-    </ul>
+    </div>
   );
 }

@@ -26,7 +26,7 @@ export default function ArtistsPage() {
 
   return (
     <div>
-      <h1>Artists</h1>
+      <h1 style={{ fontSize: 26, marginBottom: 20 }}>Artists</h1>
       <ArtistList artists={artists} myArtistId={myArtistId} onArtistsChange={setArtists} />
     </div>
   );
